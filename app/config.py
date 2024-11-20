@@ -3,3 +3,4 @@ class Config:
     SQLALCHEMY_DATABASE_URI = 'postgresql://postgres.username:password@localhost:port/dbname'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 print("test")
+print("test2")
