@@ -16,7 +16,7 @@ class User(db.Model):
 
     def __repr__(self):
         return f'<User id={self.id}, username={self.username}, email={self.email}>'
-    
+ #Class listing   
 class Listing(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     listing_name = db.Column(db.String(100), nullable=False)
