@@ -1,6 +1,8 @@
 # app/routes.py
 
 from flask import Blueprint, request, redirect, url_for, render_template, session
+from werkzeug.security import generate_password_hash
+from .models import db, User
 from .models import db, User, Listing
 
 main = Blueprint('main', __name__)
@@ -13,12 +15,16 @@ def index():
         return render_template('index.html', username=user.username, listings=listings)
     return render_template('index.html', username=None)
 
+#User story 1: registreren van een gebruiker
 @main.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
         username = request.form['username']
+        email = request.form['email']
+        password = request.form['password']
         if User.query.filter_by(username=username).first() is None:
-            new_user = User(username=username)
+            password_hash = generate_password_hash(password)
+            new_user = User(username=username, email=email, password_hash=password_hash)
             db.session.add(new_user)
             db.session.commit()
             session['user_id'] = new_user.id
