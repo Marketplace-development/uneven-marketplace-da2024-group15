@@ -2,8 +2,9 @@
 
 from flask import Blueprint, request, redirect, url_for, render_template, session
 from werkzeug.security import generate_password_hash
+from werkzeug.security import check_password_hash
 from .models import db, User
-from .models import db, User, Listing
+from .models import db, Listing
 
 main = Blueprint('main', __name__)
 
@@ -32,15 +33,17 @@ def register():
         return 'Username already registered'
     return render_template('register.html')
 
+#User story 2: Inloggen
 @main.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         username = request.form['username']
+        password = request.form['password']
         user = User.query.filter_by(username=username).first()
-        if user:
+        if user and check_password_hash(user.password_hash, password):
             session['user_id'] = user.id
             return redirect(url_for('main.index'))
-        return 'User not found'
+        return 'Invalid credentials, please try again.'
     return render_template('login.html')
 
 @main.route('/logout', methods=['POST'])
@@ -67,3 +70,12 @@ def add_listing():
 def listings():
     all_listings = Listing.query.all()
     return render_template('listings.html', listings=all_listings)
+
+#User story 3: Zoeken naar parkeerplekken
+@main.route('/search', methods=['GET'])
+def search():
+    query = request.args.get('q', '')
+    listings = Listing.query.filter(Listing.listing_name.contains(query) | 
+                                     Listing.location.contains(query)).all()
+    return render_template('search_results.html', listings=listings)
+
