@@ -3,8 +3,10 @@
 from flask import Blueprint, request, redirect, url_for, render_template, session
 from werkzeug.security import generate_password_hash
 from werkzeug.security import check_password_hash
+from datetime import datetime
 from .models import db, User
 from .models import db, Listing
+from .models import db, Booking
 
 main = Blueprint('main', __name__)
 
@@ -51,6 +53,7 @@ def logout():
     session.pop('user_id', None)
     return redirect(url_for('main.index'))
 
+#User story 4: Toevoegen van een Listing
 @main.route('/add-listing', methods=['GET', 'POST'])
 def add_listing():
     if 'user_id' not in session:
@@ -58,8 +61,10 @@ def add_listing():
     
     if request.method == 'POST':
         listing_name = request.form['listing_name']
+        location = request.form['location']
         price = float(request.form['price'])
-        new_listing = Listing(listing_name=listing_name, price=price, user_id=session['user_id'])
+        description = request.form.get('description', '')
+        new_listing = Listing(listing_name=listing_name, location=location, price=price, description=description, user_id=session['user_id'])
         db.session.add(new_listing)
         db.session.commit()
         return redirect(url_for('main.listings'))
@@ -79,3 +84,134 @@ def search():
                                      Listing.location.contains(query)).all()
     return render_template('search_results.html', listings=listings)
 
+#User story 5: Beheren van Listings
+@main.route('/edit-listing/<int:listing_id>', methods=['GET', 'POST'])
+def edit_listing(listing_id):
+    listing = Listing.query.get(listing_id)
+    if listing.user_id != session.get('user_id'):
+        return redirect(url_for('main.index'))  # Only the provider can edit the listing
+    
+    if request.method == 'POST':
+        listing.listing_name = request.form['listing_name']
+        listing.location = request.form['location']
+        listing.price = float(request.form['price'])
+        listing.description = request.form.get('description', '')
+        db.session.commit()
+        return redirect(url_for('main.listings'))
+    
+    return render_template('edit_listing.html', listing=listing)
+
+@main.route('/delete-listing/<int:listing_id>', methods=['POST'])
+def delete_listing(listing_id):
+    listing = Listing.query.get(listing_id)
+    if listing.user_id != session.get('user_id'):
+        return redirect(url_for('main.index'))  # Only the provider can delete the listing
+    
+    db.session.delete(listing)
+    db.session.commit()
+    return redirect(url_for('main.listings'))
+
+#User story 6: Boeken van een parkeerplek
+@main.route('/book/<int:listing_id>', methods=['POST'])
+def book_listing(listing_id):
+    if 'user_id' not in session:
+        return redirect(url_for('main.login'))
+    
+    listing = Listing.query.get(listing_id)
+    if listing.status != 'available':
+        return 'This listing is not available at the moment.'
+
+    start_time = request.form['start_time']
+    end_time = request.form['end_time']
+    
+    # Create a new booking
+    new_booking = Booking(user_id=session['user_id'], listing_id=listing_id,
+                          start_time=start_time, end_time=end_time, status='pending')
+    db.session.add(new_booking)
+    db.session.commit()
+
+    # Mark listing as unavailable
+    listing.status = 'booked'
+    db.session.commit()
+
+    return redirect(url_for('main.my_bookings'))
+
+#User story 7: Bekijken van mijn boekingen
+# My Bookings Route
+from .models import Booking
+
+@main.route('/my-bookings')
+def my_bookings():
+    if 'user_id' not in session:
+        return redirect(url_for('main.login'))
+    
+    bookings = Booking.query.filter_by(user_id=session['user_id']).all()
+    return render_template('my_bookings.html', bookings=bookings)
+
+#User story 8: Review laten voor een parkeerplek
+# Add Review Route
+from .models import Review, Listing
+
+@main.route('/review-parking-spot/<int:listing_id>', methods=['POST'])
+def review_parking_spot(listing_id):
+    if 'user_id' not in session:
+        return redirect(url_for('main.login'))
+
+    rating = int(request.form['rating'])
+    comment = request.form.get('comment', '')
+
+    new_review = Review(user_id=session['user_id'], listing_id=listing_id, 
+                        rating=rating, comment=comment, created_at=datetime.utcnow())
+    db.session.add(new_review)
+    db.session.commit()
+
+    return redirect(url_for('main.listings'))
+
+#User story 9: Review laten voor een huurder
+# Add Review for Renter Route
+@main.route('/review-renter/<int:rental_id>', methods=['POST'])
+def review_renter(rental_id):
+    if 'user_id' not in session:
+        return redirect(url_for('main.login'))
+    
+    booking = Booking.query.get(rental_id)
+    if booking.listing.user_id != session['user_id']:
+        return 'You are not authorized to review this renter.'
+
+    rating = int(request.form['rating'])
+    comment = request.form.get('comment', '')
+
+    new_review = Review(user_id=booking.user_id, listing_id=booking.listing_id, 
+                        rating=rating, comment=comment, created_at=datetime.utcnow())
+    db.session.add(new_review)
+    db.session.commit()
+
+    return redirect(url_for('main.listings'))
+
+#User story 10: Betaling voor parkeerplek
+# Make Payment Route
+@main.route('/make-payment/<int:rental_id>', methods=['POST'])
+def make_payment(rental_id):
+    booking = Booking.query.get(rental_id)
+    if booking.status != 'pending':
+        return 'This booking is not in a valid state for payment.'
+    
+    # Process payment (here we assume it's successful)
+    booking.payment_status = 'paid'
+    booking.status = 'confirmed'
+    db.session.commit()
+    
+    return redirect(url_for('main.my_bookings'))
+
+#User story 11: Betaling ontvangen  (door providers)
+# Payment Received Route
+@main.route('/payment-received/<int:rental_id>', methods=['POST'])
+def payment_received(rental_id):
+    booking = Booking.query.get(rental_id)
+    if booking.listing.user_id != session['user_id']:
+        return 'You are not authorized to confirm payment for this booking.'
+
+    booking.payment_status = 'paid'
+    db.session.commit()
+    
+    return redirect(url_for('main.my_bookings'))
