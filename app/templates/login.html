@@ -1,13 +1,41 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Login</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+    <link rel="stylesheet" href="styles/login.css">
 </head>
 <body>
-    <h1>Login</h1>
-    <form method="post">
-        Username: <input type="text" name="username" required>
-        <input type="submit" value="Login">
-    </form>
+    <div class="login-container">
+        <!-- Logo -->
+        <div class="logo">Rent<br>My<br>Spot</div>
+
+        <!-- Sign-In Title -->
+        <h1 class="signin-title">Sign In to Rent My Spot</h1>
+
+        <!-- Form Fields -->
+        <div class="form">
+            <label for="username" class="form-label">Username</label>
+            <input type="text" id="username" class="form-input" placeholder="Enter your username">
+
+            <label for="password" class="form-label">Password</label>
+            <input type="password" id="password" class="form-input" placeholder="Enter your password">
+
+            <!-- Login Button -->
+            <button class="login-button">LOG IN</button>
+        </div>
+
+        <!-- New Customer Section -->
+        <div class="new-customer">
+            <span>New Customer? </span>
+            <a href="register.html" class="create-account-link">Create an account</a>
+        </div>
+
+        <!-- Right Image -->
+        <img class="signin-image" src="https://via.placeholder.com/683x696" alt="Placeholder Image">
+    </div>
 </body>
 </html>
+
+

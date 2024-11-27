@@ -5,6 +5,7 @@ db = SQLAlchemy()
 
 
 class User(db.Model):
+    __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
@@ -18,6 +19,7 @@ class User(db.Model):
         return f'<User id={self.id}, username={self.username}, email={self.email}>'
  #Class listing   
 class Listing(db.Model):
+    __tablename__ = 'parking_spots'
     id = db.Column(db.Integer, primary_key=True)
     listing_name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.String(255))
@@ -33,9 +35,10 @@ class Listing(db.Model):
         return f'<Listing id={self.id}, name={self.listing_name}, price=${self.price}, location={self.location}>'
     
 class Booking(db.Model):
+    __tablename__ = 'transaction'
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    listing_id = db.Column(db.Integer, db.ForeignKey('listings.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    listing_id = db.Column(db.Integer, db.ForeignKey('parking_spots.id'), nullable=False)
     booking_date = db.Column(db.DateTime, nullable=False)  
     start_time = db.Column(db.DateTime, nullable=False)  
     end_time = db.Column(db.DateTime, nullable=False)  
@@ -46,12 +49,13 @@ class Booking(db.Model):
         return f'<Booking id={self.id}, user_id={self.user_id}, listing_id={self.listing_id}, status={self.status}>'
     
 class Review(db.Model):
+    __tablename__ = 'review'
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    listing_id = db.Column(db.Integer, db.ForeignKey('listings.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    listing_id = db.Column(db.Integer, db.ForeignKey('parking_spots.id'), nullable=False)
     rating = db.Column(db.Integer, nullable=False)  # Waardering (bijv. 1-5 sterren)
     comment = db.Column(db.String(255))  # Optionele tekstuele beoordeling
-    created_at = db.Column(db.DateTime, nullable=False)  
+    created_at = db.Column(db.DateTime, nullable=False, default= datetime.utcnow)  
 
     def __repr__(self):
         return f'<Review id={self.id}, user_id={self.user_id}, listing_id={self.listing_id}, rating={self.rating}>'

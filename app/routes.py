@@ -207,3 +207,4 @@ def payment_received(rental_id):
     db.session.commit()
     
     return redirect(url_for('main.my_bookings'))
+
