@@ -14,6 +14,23 @@ def index():
         return render_template('index.html', username=user.username, listings=listings)
     return render_template('index.html', username=None)
 
+#basis voor login route
+@main.route('/login')
+def login():
+    return render_template('login.html')
+
+#basis voor register route
+@main.route('/register')
+def register():
+    return render_template('register.html')
+
+#basis voor listings route
+@main.route('/listings')
+def listings():
+    return render_template('listings.html')
+
+
+
 
 
 
