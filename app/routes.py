@@ -2,9 +2,7 @@ from flask import Blueprint, request, redirect, url_for, render_template, sessio
 from werkzeug.security import generate_password_hash
 from werkzeug.security import check_password_hash
 from datetime import datetime
-from app.models import db, User
-from app.models import db, Listing
-from app.models import db, Booking
+from app.models import db, User, Transaction, Review, ParkingSpot
 
 main = Blueprint('main', __name__)
 
