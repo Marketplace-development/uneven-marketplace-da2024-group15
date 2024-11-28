@@ -10,7 +10,7 @@ class User(db.Model):
     user_id = db.Column(db.BigInteger, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     registration_date = db.Column(TIMESTAMP(timezone=True), server_default=func.now())
-    email = db.Column(db.String(120), unique=True, nullable=False)
+    
 
     def __repr__(self):
         return f'<User {self.user_id}: {self.username}>'
