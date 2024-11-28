@@ -1,10 +1,6 @@
 from flask import Blueprint, request, redirect, url_for, render_template, session
-from werkzeug.security import generate_password_hash
-from werkzeug.security import check_password_hash
 from datetime import datetime
-from app.models import db, User
-from app.models import db, Listing
-from app.models import db, Booking
+from models import db, User, Transaction, Review, ParkingSpot
 
 main = Blueprint('main', __name__)
 
@@ -12,11 +8,11 @@ main = Blueprint('main', __name__)
 def index():
     if 'user_id' in session:
         user = User.query.get(session['user_id'])
-        listings = Listing.query.filter_by(user_id=user.id).all()  # Fetch listings for logged-in user
+        listings = ParkingSpot.query.filter_by(user_id=user.id).all() 
         return render_template('index.html', username=user.username, listings=listings)
     return render_template('index.html', username=None)
 
-#User story 1: registreren van een gebruiker
+
 @main.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -135,7 +131,6 @@ def book_listing(listing_id):
     return redirect(url_for('main.my_bookings'))
 
 #User story 7: Bekijken van mijn boekingen
-from .models import Booking
 
 @main.route('/my-bookings')
 def my_bookings():
@@ -146,7 +141,6 @@ def my_bookings():
     return render_template('my_bookings.html', bookings=bookings)
 
 #User story 8: Review laten voor een parkeerplek
-from .models import Review, Listing
 
 @main.route('/review-parking-spot/<int:listing_id>', methods=['POST'])
 def review_parking_spot(listing_id):
