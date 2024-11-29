@@ -1,13 +1,36 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register</title>
+    <link rel="stylesheet" href="styles/register.css"> <!-- Voeg je CSS-bestand toe -->
 </head>
 <body>
-    <h1>Register</h1>
-    <form method="post">
-        Username: <input type="text" name="username" required>
-        <input type="submit" value="Register">
-    </form>
+    <div class="register-container">
+        <!-- Logo -->
+        <div class="logo">Rent<br>My<br>Spot</div>
+
+        <!-- Title -->
+        <h1>Create an Account</h1>
+
+        <!-- Registratieformulier -->
+        <form method="POST" action="{{ url_for('main.register') }}">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" required>
+
+            <label for="phonenumber">Phone Number</label>
+            <input type="text" id="phonenumber" name="phonenumber" required>
+
+            <button type="submit" class="register-button">Register</button>
+        </form>
+
+        <!-- Login-link -->
+        <div class="login-link">
+            <span>Already have an account? </span>
+            <a href="{{ url_for('main.login') }}">Log in</a>
+        </div>
+    </div>
 </body>
 </html>
+
