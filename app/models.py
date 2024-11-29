@@ -6,52 +6,65 @@ db = SQLAlchemy()
 # User Model
 class User(db.Model):
     __tablename__ = 'user'
-    username = db.Column(db.String, primary_key=True)
-    phonenumber = db.Column(db.BigInteger, nullable=False, unique=True)
-    registration_date = db.Column(db.DateTime, default=datetime.utcnow)
+    username = db.Column(db.String, unique=True, nullable=False)  
+    phonenumber = db.Column(db.BigInteger, primary_key=True)  
+    registration_date = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)  
 
-# Host Model
 class Host(db.Model):
     __tablename__ = 'host'
-    phonenumber = db.Column(db.BigInteger, primary_key=True)
+    phonenumber = db.Column(db.BigInteger, primary_key=True)  
+    user = db.relationship('User', backref=db.backref('hosts', lazy=True))
 
 # Customer Model
 class Customer(db.Model):
     __tablename__ = 'customer'
     phonenumber = db.Column(db.BigInteger, primary_key=True)
+    
+    user = db.relationship('User', backref=db.backref('customers', lazy=True))
+
 
 # Parking Spot Model
 class ParkingSpot(db.Model):
     __tablename__ = 'parking_spots'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    description = db.Column(db.Text, nullable=True)
-    picture = db.Column(db.Text, nullable=True)
-    status = db.Column(db.String, nullable=False)
-    timeslot = db.Column(db.String, nullable=False)
-    location = db.Column(db.String, nullable=False)
-    price = db.Column(db.Numeric, nullable=False)
-    host_id = db.Column(db.BigInteger, db.ForeignKey('host.phonenumber'), nullable=False)
+    id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)  
+    name = db.Column(db.String, nullable=False) 
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)  
+    description = db.Column(db.Text, nullable=True)  
+    picture = db.Column(db.Text, nullable=True)  
+    status = db.Column(db.String, nullable=False, default='available')  
+    timeslot = db.Column(db.DateTime, nullable=True)  
+    location = db.Column(db.String, nullable=False)  
+    price = db.Column(db.Numeric, nullable=False)  
+    host_id = db.Column(db.BigInteger, db.ForeignKey('host.phonenumber'), nullable=False)  
+    
+    host = db.relationship('Host', backref=db.backref('parking_spots', lazy=True))
+
 
 # Transaction Model
 class Transaction(db.Model):
     __tablename__ = 'transaction'
-    transaction_id = db.Column(db.Integer, primary_key=True)
-    transaction_date = db.Column(db.DateTime, default=datetime.utcnow)
-    status = db.Column(db.String, nullable=False)
-    commission_fee = db.Column(db.Numeric, nullable=False)
-    phonec = db.Column(db.BigInteger, db.ForeignKey('customer.phonenumber'), nullable=False)
-    phoneh = db.Column(db.BigInteger, db.ForeignKey('host.phonenumber'), nullable=False)
-    parkingid = db.Column(db.Integer, db.ForeignKey('parking_spots.id'), nullable=False)
+    transaction_id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)  
+    transaction_date = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)  
+    status = db.Column(db.String, nullable=False)  
+    commission_fee = db.Column(db.Numeric, nullable=False)  
+    phonec = db.Column(db.BigInteger, db.ForeignKey('customer.phonenumber'), nullable=True)  
+    phoneh = db.Column(db.BigInteger, db.ForeignKey('host.phonenumber'), nullable=True)  
+    parkingid = db.Column(db.BigInteger, db.ForeignKey('parking_spots.id'), nullable=True)  
+   
+    customer = db.relationship('Customer', backref=db.backref('transactions', lazy=True))
+    host = db.relationship('Host', backref=db.backref('transactions', lazy=True))
+    parking_spot = db.relationship('ParkingSpot', backref=db.backref('transactions', lazy=True))
 
 # Review Model
 class Review(db.Model):
     __tablename__ = 'review'
-    id = db.Column(db.Integer, primary_key=True)
-    parking_spot_id = db.Column(db.Integer, db.ForeignKey('parking_spots.id'), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    customer_id = db.Column(db.BigInteger, db.ForeignKey('customer.phonenumber'), nullable=False)
+    id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)  
+    parking_spot_id = db.Column(db.BigInteger, db.ForeignKey('parking_spots.id'), nullable=False)  
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)  
+    customer_id = db.Column(db.BigInteger, db.ForeignKey('customer.phonenumber'), nullable=True) 
+
+    customer = db.relationship('Customer', backref=db.backref('reviews', lazy=True))
+    parking_spot = db.relationship('ParkingSpot', backref=db.backref('reviews', lazy=True))
 
 # Alembic Version Model
 class AlembicVersion(db.Model):
