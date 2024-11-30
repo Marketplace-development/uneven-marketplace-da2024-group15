@@ -1,4 +1,4 @@
-from flask import Blueprint, request, redirect, url_for, render_template
+from flask import Blueprint, request, redirect, url_for, render_template, session, flash
 from .models import db, User
 from supabase import create_client
 
@@ -12,11 +12,8 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 @main.route('/')
 def index():
-    return render_template('index.html', username=None)
-
-@main.route('/login')
-def login():
-    return render_template('login.html')
+    username = session.get('username')  # Get the username from the session
+    return render_template('index.html', username=username)
 
 @main.route('/register', methods=['GET', 'POST'])
 def register():
@@ -50,18 +47,34 @@ def register():
         # Redirect naar login-pagina
         return redirect(url_for('main.login'))
 
-    # GET: Toon registratiepagina
     return render_template('register.html')
+
+@main.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        
+        # Controleer of de gebruikersnaam bestaat in de lokale database
+        user = User.query.filter_by(username=username).first()
+        
+        if user:  # Gebruiker gevonden
+            session['username'] = username  # Sla de gebruikersnaam op in de sessie
+            flash("You are now logged in", "success")
+            return redirect(url_for('main.index'))  # Stuur gebruiker terug naar de hoofdpagina
+        else:
+            flash("This username does not exist", "danger")
+            return redirect(url_for('main.login'))
+
+    return render_template('login.html')
+
+@main.route('/logout', methods=['POST'])
+def logout():
+    session.pop('username', None)  # Verwijder de gebruikersnaam uit de sessie
+    flash("You have been logged out", "success")
+    return redirect(url_for('main.index'))
+
 
 @main.route('/listings')
 def listings():
+    # Your code for listings view
     return render_template('listings.html')
-
-
-
-
-
-
-
-
-
