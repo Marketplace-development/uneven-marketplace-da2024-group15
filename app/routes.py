@@ -12,42 +12,69 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 @main.route('/')
 def index():
-    username = session.get('username')  # Get the username from the session
+    username = session.get('username')  # Haal de username op uit de sessie
     return render_template('index.html', username=username)
 
 @main.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        # Haal gegevens uit het formulier
         username = request.form.get('username')
         phonenumber = request.form.get('phonenumber')
 
+        print(f"Received username: {username}, phonenumber: {phonenumber}")  # Debug
+
         # Validatie: Controleer in de lokale database
         if User.query.filter_by(username=username).first():
-            return "Username already taken!", 400
+            flash(f"Username '{username}' already exists in the local database!", "danger")
+            return redirect(url_for('main.register'))
         if User.query.filter_by(phonenumber=phonenumber).first():
-            return "Phone number already in use!", 400
+            flash(f"Phone number '{phonenumber}' already exists in the local database!", "danger")
+            return redirect(url_for('main.register'))
 
         # Validatie: Controleer in Supabase
-        response = supabase.table('user').select('*').eq('username', username).execute()
-        if response.data:
-            return "Username already exists in Supabase!", 400
+        response = supabase.table('user').select('username').eq('username', username).execute()
+        print(f"Supabase check response: {response.data}")  # Debugging
+        if response.data and len(response.data) > 0:
+            flash(f"Username '{username}' already exists in Supabase!", "danger")
+            return redirect(url_for('main.register'))
 
-        # Voeg gebruiker toe aan de lokale database
-        new_user = User(username=username, phonenumber=phonenumber)
-        db.session.add(new_user)
-        db.session.commit()
+        # Voeg gebruiker toe aan Supabase met upsert
+        try:
+            response = supabase.table('user').upsert({
+                'username': username,
+                'phonenumber': phonenumber
+            }).execute()
+            print(f"User successfully added or updated in Supabase: {response.data}")  # Debugging
+        except Exception as e:
+            print(f"Supabase upsert error: {e}")  # Debugging
+            flash("An error occurred while registering in Supabase.", "danger")
+            return redirect(url_for('main.register'))
 
-        # Voeg gebruiker toe aan Supabase
-        supabase.table('user').insert({
-            'username': username,
-            'phonenumber': phonenumber
-        }).execute()
+        # Controleer opnieuw in de lokale database voordat je invoegt
+        if not User.query.filter_by(username=username).first():
+            try:
+                new_user = User(username=username, phonenumber=phonenumber)
+                db.session.add(new_user)
+                db.session.commit()
+                print("User successfully added to local database.")  # Debugging
+            except Exception as e:
+                print(f"Local database insert error: {e}")  # Debugging
+                flash("An error occurred while registering in the local database.", "danger")
+                return redirect(url_for('main.register'))
+        else:
+            print(f"User '{username}' already exists in the local database after Supabase sync.")  # Debugging
 
-        # Redirect naar login-pagina
-        return redirect(url_for('main.login'))
+        # Sla de gebruikersnaam op in de sessie
+        session['username'] = username
+
+        flash('Registration successful! Welcome to Rent My Spot!', "success")
+
+        # Redirect naar de index-pagina
+        return redirect(url_for('main.index'))
 
     return render_template('register.html')
+
+
 
 @main.route('/login', methods=['GET', 'POST'])
 def login():
@@ -76,5 +103,7 @@ def logout():
 
 @main.route('/listings')
 def listings():
-    # Your code for listings view
+    # Placeholder voor listings view
     return render_template('listings.html')
+
+
