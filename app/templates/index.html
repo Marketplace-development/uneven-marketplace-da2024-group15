@@ -29,6 +29,9 @@
                 {% endif %}
             </div>
             <div class="col-sm-4">
+                <h2>Actions</h2>
+                <!-- Nieuwe knop "Create a Listing" -->
+                <a href="{{ url_for('main.add_listing') }}" class="btn btn-success btn-block">Create a Listing</a>
                 <h2>All Listings</h2>
                 <a href="{{ url_for('main.listings') }}"><button class="btn btn-info">View All Listings</button></a>
             </div>
@@ -41,4 +44,3 @@
     {% endif %}
 </body>
 </html>
-

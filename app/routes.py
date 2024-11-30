@@ -1,6 +1,7 @@
 from flask import Blueprint, request, redirect, url_for, render_template, session, flash
-from .models import db, User
+from .models import db, User, Host, Customer, ParkingSpot, Transaction, Review
 from supabase import create_client
+from datetime import datetime
 
 # Blueprint instellen
 main = Blueprint('main', __name__)
@@ -105,5 +106,58 @@ def logout():
 def listings():
     # Placeholder voor listings view
     return render_template('listings.html')
+
+@main.route('/add_listing', methods=['GET', 'POST'])
+def add_listing():
+    if 'username' not in session:
+        flash("You need to be logged in to add a listing.", "danger")
+        return redirect(url_for('main.login'))
+
+    username = session.get('username')
+    user = User.query.filter_by(username=username).first()
+
+    if not user:
+        flash("User not found in the local database.", "danger")
+        return redirect(url_for('main.index'))
+
+    if request.method == 'POST':
+        name = request.form.get('name')
+        description = request.form.get('description')
+        location = request.form.get('location')
+        price = request.form.get('price')
+        timeslot = request.form.get('timeslot')
+        status = request.form.get('status')
+
+        # Controleer of de gebruiker een Host is
+        host = Host.query.filter_by(phonenumber=user.phonenumber).first()
+        if not host:
+            # Voeg toe als Host als dat nog niet is gedaan
+            host = Host(phonenumber=user.phonenumber)
+            db.session.add(host)
+            db.session.commit()
+
+        try:
+            # Voeg de nieuwe parkeerplaats toe aan de database
+            new_parking_spot = ParkingSpot(
+                name=name,
+                description=description,
+                location=location,
+                price=price,
+                timeslot=datetime.strptime(timeslot, '%Y-%m-%d %H:%M:%S'),
+                status=status,
+                host_id=host.phonenumber  # phonenumber van de ingelogde gebruiker
+            )
+            db.session.add(new_parking_spot)
+            db.session.commit()
+
+            flash("Parking spot successfully added!", "success")
+            return redirect(url_for('main.index'))
+
+        except Exception as e:
+            db.session.rollback()
+            flash(f"An error occurred while adding the parking spot: {e}", "danger")
+            return redirect(url_for('main.add_listing'))
+
+    return render_template('add_listing.html')
 
 
