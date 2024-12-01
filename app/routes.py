@@ -247,15 +247,26 @@ def make_available(parking_spot_id):
         endtime = request.form.get('endtime')
         price = request.form.get('price')
 
-        if not starttime or not endtime or not price:
-            flash("Please provide valid availability details.", "danger")
+        # Controleer of starttijd en eindtijd geldig zijn
+        try:
+            start_datetime = datetime.strptime(starttime, "%Y-%m-%dT%H:%M")
+            end_datetime = datetime.strptime(endtime, "%Y-%m-%dT%H:%M")
+            if end_datetime <= start_datetime:
+                flash("End time must be later than start time.", "danger")
+                return redirect(url_for('main.make_available', parking_spot_id=parking_spot_id))
+        except ValueError:
+            flash("Invalid date format. Please use the correct format (YYYY-MM-DD HH:MM).", "danger")
+            return redirect(url_for('main.make_available', parking_spot_id=parking_spot_id))
+
+        if not price or float(price) <= 0:
+            flash("Please provide a valid price greater than 0.", "danger")
             return redirect(url_for('main.make_available', parking_spot_id=parking_spot_id))
 
         try:
             # Voeg beschikbaarheid toe aan de database
             availability = Availability(
-                starttime=datetime.strptime(starttime, "%Y-%m-%dT%H:%M"),
-                endtime=datetime.strptime(endtime, "%Y-%m-%dT%H:%M"),
+                starttime=start_datetime,
+                endtime=end_datetime,
                 parkingspot_id=parking_spot_id,
                 price=price
             )
@@ -271,6 +282,7 @@ def make_available(parking_spot_id):
             return redirect(url_for('main.make_available', parking_spot_id=parking_spot_id))
 
     return render_template('make_available.html', parking_spot=parking_spot)
+
 
 @main.route('/details/<int:parking_spot_id>')
 def view_details(parking_spot_id):
