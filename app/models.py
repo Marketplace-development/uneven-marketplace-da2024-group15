@@ -31,10 +31,11 @@ class ParkingSpot(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)  
     description = db.Column(db.Text, nullable=True)  
     status = db.Column(db.Text, nullable=False, default='available') 
-    timeslot = db.Column(db.DateTime, nullable=False)  
     location = db.Column(db.Text, nullable=False)  
     price = db.Column(db.Numeric, nullable=False)  
     host_id = db.Column(db.BigInteger, db.ForeignKey('host.phonenumber'), nullable=False)  
+    starttime = db.Column(db.DateTime, nullable=False)
+    endtime = db.Column(db.DateTime, nullable=False)
     
     host = db.relationship('Host', backref=db.backref('parking_spots', lazy=True))
 
