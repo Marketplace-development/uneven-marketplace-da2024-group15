@@ -6,41 +6,44 @@
     <title>Dashboard</title>
 </head>
 <body>
-    {% if username %}
     <div class="container">
         <div class="row">
+            <!-- Welcome Section -->
             <div class="col-sm-4">
                 <h3>Welcome, {{ username }}!</h3>
                 <form action="{{ url_for('main.logout') }}" method="post">
                     <button type="submit" class="btn btn-danger">Logout</button>
                 </form>
+                <a href="{{ url_for('main.account') }}" class="btn btn-primary mt-2">My Account</a>
             </div>
-            <div class="col-sm-4">
-                {% if listings %}
-                <h2>Your Listings</h2>
-                <a href="{{ url_for('main.add_listing') }}"><button class="btn btn-primary">Add Listing</button></a>
-                <ul>
-                    {% for listing in listings %}
-                    <li>{{ listing.listing_name }} - ${{ "%.2f"|format(listing.price) }}</li>
-                    {% endfor %}
-                </ul>
-                {% else %}
-                <p>No listings available. Add your first listing now!</p>
-                {% endif %}
-            </div>
-            <div class="col-sm-4">
+
+            <!-- Actions Section -->
+            <div class="col-sm-4 offset-sm-4">
                 <h2>Actions</h2>
-                <!-- Nieuwe knop "Create a Listing" -->
                 <a href="{{ url_for('main.add_listing') }}" class="btn btn-success btn-block">Create a Listing</a>
                 <h2>All Listings</h2>
                 <a href="{{ url_for('main.listings') }}"><button class="btn btn-info">View All Listings</button></a>
             </div>
         </div>
+
+        <!-- Listings Section -->
+        <div class="row mt-5">
+            <h2>Active Parking Spots</h2>
+            <div class="d-flex flex-wrap">
+                {% for listing in active_listings %}
+                    <div class="card m-2" style="width: 18rem;">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ listing.location }}</h5>
+                            <p class="card-text"><strong>Price:</strong> ${{ listing.price }}</p>
+                            <p class="card-text"><small class="text-muted">{{ listing.description }}</small></p>
+                            <a href="#" class="btn btn-primary">View Details</a>
+                        </div>
+                    </div>
+                {% else %}
+                    <p>No active parking spots available at the moment.</p>
+                {% endfor %}
+            </div>
+        </div>
     </div>
-    {% else %}
-    <h1>You are not logged in</h1>
-    <a href="{{ url_for('main.login') }}">Login</a>
-    <a href="{{ url_for('main.register') }}">Register</a>
-    {% endif %}
 </body>
 </html>
