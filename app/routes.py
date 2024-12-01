@@ -445,3 +445,22 @@ def submit_review(parking_spot_id):
         flash(f"An error occurred while submitting your review: {e}", "danger")
 
     return redirect(url_for('main.view_booked_spots'))
+
+@main.route('/view_reviews/<int:parking_spot_id>')
+def view_reviews(parking_spot_id):
+    """
+    Route to view reviews for a specific parking spot.
+    """
+    if 'username' not in session:
+        flash("You need to be logged in to view reviews.", "danger")
+        return redirect(url_for('main.login'))
+
+    parking_spot = ParkingSpot.query.get(parking_spot_id)
+
+    if not parking_spot:
+        flash("Parking spot not found.", "danger")
+        return redirect(url_for('main.account'))
+
+    reviews = Review.query.filter_by(parking_spot_id=parking_spot_id).all()
+
+    return render_template('view_reviews.html', parking_spot=parking_spot, reviews=reviews)
