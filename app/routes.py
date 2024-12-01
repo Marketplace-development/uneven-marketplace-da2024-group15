@@ -1,5 +1,5 @@
 from flask import Blueprint, request, redirect, url_for, render_template, session, flash
-from .models import db, User, Host, Customer, ParkingSpot, Transaction, Review
+from .models import db, User, Host, Customer, ParkingSpot, Transaction, Review, Availability
 from supabase import create_client
 from datetime import datetime
 
@@ -64,11 +64,10 @@ def index():
     username = session['username']
     user = User.query.filter_by(username=username).first()
 
-    # Haal alle actieve parkeerplaatsvermeldingen op
-    active_listings = ParkingSpot.query.filter_by(status='available').all()
+    # Haal alle parkeerplaatsen op die beschikbaar zijn
+    active_listings = db.session.query(ParkingSpot, Availability).join(Availability).all()
 
     return render_template('index.html', username=username, active_listings=active_listings)
-
 
 
 @main.route('/register', methods=['GET', 'POST'])
@@ -168,10 +167,6 @@ def add_listing():
         name = request.form.get('name')
         description = request.form.get('description')
         location = request.form.get('location')
-        price = request.form.get('price')
-        starttime = request.form.get('starttime')
-        endtime = request.form.get('endtime')
-        status = request.form.get('status')
 
         # Controleer of de gebruiker een Host is
         host = Host.query.filter_by(phonenumber=user.phonenumber).first()
@@ -187,10 +182,6 @@ def add_listing():
                 name=name,
                 description=description,
                 location=location,
-                price=price,
-                starttime = datetime.strptime(starttime, '%Y-%m-%d %H:%M'),
-                endtime = datetime.strptime(endtime, '%Y-%m-%d %H:%M'),
-                status=status,
                 host_id=host.phonenumber  # phonenumber van de ingelogde gebruiker
             )
             db.session.add(new_parking_spot)
@@ -227,4 +218,54 @@ def account():
 
     return render_template('account.html', user=user, listings=listings)
 
+@main.route('/make_available/<int:parking_spot_id>', methods=['GET', 'POST'])
+def make_available(parking_spot_id):
+    """
+    Route to mark a parking spot as available by adding availability slots.
+    """
+    if 'username' not in session:
+        flash("You need to be logged in to perform this action.", "danger")
+        return redirect(url_for('main.login'))
+
+    username = session['username']
+    user = User.query.filter_by(username=username).first()
+
+    if not user:
+        flash("User not found in the database.", "danger")
+        return redirect(url_for('main.index'))
+
+    parking_spot = ParkingSpot.query.get(parking_spot_id)
+    if not parking_spot or parking_spot.host_id != user.phonenumber:
+        flash("Parking spot not found or you do not have permission to modify it.", "danger")
+        return redirect(url_for('main.account'))
+
+    if request.method == 'POST':
+        starttime = request.form.get('starttime')
+        endtime = request.form.get('endtime')
+        price = request.form.get('price')
+
+        if not starttime or not endtime or not price:
+            flash("Please provide valid availability details.", "danger")
+            return redirect(url_for('main.make_available', parking_spot_id=parking_spot_id))
+
+        try:
+            # Voeg beschikbaarheid toe aan de database
+            availability = Availability(
+                starttime=datetime.strptime(starttime, "%Y-%m-%dT%H:%M"),
+                endtime=datetime.strptime(endtime, "%Y-%m-%dT%H:%M"),
+                parkingspot_id=parking_spot_id,
+                price=price
+            )
+            db.session.add(availability)
+            db.session.commit()
+
+            flash("Availability successfully added!", "success")
+            return redirect(url_for('main.account'))  # Terug naar accountpagina na succesvolle opslag
+
+        except Exception as e:
+            db.session.rollback()
+            flash(f"An error occurred: {e}", "danger")
+            return redirect(url_for('main.make_available', parking_spot_id=parking_spot_id))
+
+    return render_template('make_available.html', parking_spot=parking_spot)
 
