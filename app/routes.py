@@ -200,7 +200,7 @@ def add_listing():
 @main.route('/account')
 def account():
     """
-    Accountpagina: toont gebruikersinformatie en listings van de gebruiker.
+    Account page: Shows user information, owned listings, and booked listings.
     """
     if 'username' not in session:
         flash("You need to be logged in to view your account.", "danger")
@@ -213,10 +213,13 @@ def account():
         flash("User not found in the database.", "danger")
         return redirect(url_for('main.index'))
 
-    # Ophalen van listings van de gebruiker
+    # Listings owned by the user
     listings = ParkingSpot.query.filter_by(host_id=user.phonenumber).all()
 
-    return render_template('account.html', user=user, listings=listings)
+    # Booked parking spots for the customer
+    booked_listings = db.session.query(Transaction).filter_by(phonec=user.phonenumber).all()
+
+    return render_template('account.html', user=user, listings=listings, booked_listings=booked_listings)
 
 @main.route('/make_available/<int:parking_spot_id>', methods=['GET', 'POST'])
 def make_available(parking_spot_id):
@@ -269,3 +272,176 @@ def make_available(parking_spot_id):
 
     return render_template('make_available.html', parking_spot=parking_spot)
 
+@main.route('/details/<int:parking_spot_id>')
+def view_details(parking_spot_id):
+    """
+    Route to view details of a specific parking spot.
+    """
+    parking_spot = db.session.query(ParkingSpot, Availability).join(Availability).filter(ParkingSpot.id == parking_spot_id).first()
+
+    if not parking_spot:
+        flash("Parking spot not found or no availability available.", "danger")
+        return redirect(url_for('main.index'))
+
+    return render_template('details.html', parking_spot=parking_spot[0], availability=parking_spot[1])
+
+@main.route('/book/<int:parking_spot_id>', methods=['POST'])
+def book_now(parking_spot_id):
+    """
+    Route to book a parking spot, making it unavailable and associating it with the current user.
+    """
+    if 'username' not in session:
+        flash("You need to be logged in to book a parking spot.", "danger")
+        return redirect(url_for('main.login'))
+
+    username = session['username']
+    user = User.query.filter_by(username=username).first()
+
+    if not user:
+        flash("User not found in the database.", "danger")
+        return redirect(url_for('main.index'))
+
+    # Controleer of de gebruiker al in de customer-tabel staat
+    customer = Customer.query.filter_by(phonenumber=user.phonenumber).first()
+    if not customer:
+        try:
+            # Voeg de gebruiker toe aan de customer-tabel
+            new_customer = Customer(phonenumber=user.phonenumber)
+            db.session.add(new_customer)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            flash(f"An error occurred while registering as a customer: {e}", "danger")
+            return redirect(url_for('main.index'))
+
+    # Haal de parkeerplaats en beschikbaarheid op
+    parking_spot = ParkingSpot.query.get(parking_spot_id)
+    availability = Availability.query.filter_by(parkingspot_id=parking_spot_id).first()
+
+    if not parking_spot or not availability:
+        flash("Parking spot not found or no availability available.", "danger")
+        return redirect(url_for('main.index'))
+
+    if parking_spot.host_id == user.phonenumber:
+        flash("You cannot book your own parking spot.", "danger")
+        return redirect(url_for('main.index'))
+
+    try:
+        # Verwijder de beschikbaarheid
+        db.session.delete(availability)
+        db.session.commit()
+
+        # Maak een nieuwe transactie aan
+        transaction = Transaction(
+            transaction_date=datetime.utcnow(),
+            status="Booked",
+            commission_fee=5.00,
+            phonec=user.phonenumber,  # Telefoonnummer van de huidige gebruiker
+            phoneh=parking_spot.host_id,  # Telefoonnummer van de host
+            parkingid=parking_spot.id
+        )
+        db.session.add(transaction)
+        db.session.commit()
+
+        flash("Your parking spot has been successfully booked. Thank you for your booking!", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"An error occurred while booking the parking spot: {e}", "danger")
+
+    return redirect(url_for('main.index'))
+
+@main.route('/booked_parking_spots')
+def view_booked_spots():
+    """
+    Pagina om geboekte parkeerplaatsen te bekijken.
+    """
+    if 'username' not in session:
+        flash("You need to be logged in to view booked parking spots.", "danger")
+        return redirect(url_for('main.login'))
+
+    username = session['username']
+    user = User.query.filter_by(username=username).first()
+
+    if not user:
+        flash("User not found in the database.", "danger")
+        return redirect(url_for('main.index'))
+
+    # Haal geboekte parkeerplaatsen op voor de gebruiker
+    booked_spots = db.session.query(Transaction).filter_by(phonec=user.phonenumber).all()
+
+    return render_template('booked_spots.html', user=user, booked_spots=booked_spots)
+
+@main.route('/add_review/<int:parking_spot_id>', methods=['GET'])
+def add_review(parking_spot_id):
+    """
+    Route to display the review form for a parking spot.
+    """
+    if 'username' not in session:
+        flash("You need to be logged in to leave a review.", "danger")
+        return redirect(url_for('main.login'))
+
+    username = session['username']
+    user = User.query.filter_by(username=username).first()
+
+    if not user:
+        flash("User not found in the database.", "danger")
+        return redirect(url_for('main.index'))
+
+    parking_spot = ParkingSpot.query.get(parking_spot_id)
+
+    if not parking_spot:
+        flash("Parking spot not found.", "danger")
+        return redirect(url_for('main.view_booked_spots'))
+
+    return render_template('add_review.html', parking_spot=parking_spot)
+
+
+@main.route('/submit_review/<int:parking_spot_id>', methods=['POST'])
+def submit_review(parking_spot_id):
+    """
+    Route to handle the submission of a review for a parking spot.
+    """
+    if 'username' not in session:
+        flash("You need to be logged in to leave a review.", "danger")
+        return redirect(url_for('main.login'))
+
+    username = session['username']
+    user = User.query.filter_by(username=username).first()
+
+    if not user:
+        flash("User not found in the database.", "danger")
+        return redirect(url_for('main.index'))
+
+    # Haal gegevens van het formulier op
+    rating = request.form.get('rating')
+    comment = request.form.get('comment', '')
+
+    if not rating or not (1 <= int(rating) <= 5):
+        flash("Please provide a valid rating between 1 and 5.", "danger")
+        return redirect(url_for('main.add_review', parking_spot_id=parking_spot_id))
+
+    # Controleer of de parkeerplaats bestaat
+    parking_spot = ParkingSpot.query.get(parking_spot_id)
+    if not parking_spot:
+        flash("Parking spot not found.", "danger")
+        return redirect(url_for('main.view_booked_spots'))
+
+    try:
+        # Voeg de review toe aan de database
+        review = Review(
+            parking_spot_id=parking_spot_id,
+            customer_id=user.phonenumber,
+            rating=int(rating),
+            comment=comment,
+            created_at=datetime.utcnow()
+        )
+        db.session.add(review)
+        db.session.commit()
+
+        # Voeg een specifieke flash-melding toe voor de parkeerplaats
+        flash(f"Review for '{parking_spot.name}' has been successfully submitted.", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"An error occurred while submitting your review: {e}", "danger")
+
+    return redirect(url_for('main.view_booked_spots'))

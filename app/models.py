@@ -69,6 +69,8 @@ class Review(db.Model):
     parking_spot_id = db.Column(db.BigInteger, db.ForeignKey('parking_spots.id'), nullable=False)  
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)  
     customer_id = db.Column(db.BigInteger, db.ForeignKey('customer.phonenumber'), nullable=False) 
+    rating = db.Column(db.Integer, nullable=False)  
+    comment = db.Column(db.Text, nullable=True)  
 
     customer = db.relationship('Customer', backref=db.backref('reviews', lazy=True))
     parking_spot = db.relationship('ParkingSpot', backref=db.backref('reviews', lazy=True))
