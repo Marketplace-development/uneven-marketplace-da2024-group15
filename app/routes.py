@@ -188,8 +188,8 @@ def add_listing():
                 description=description,
                 location=location,
                 price=price,
-                starttime=datetime.strptime(starttime, '%Y-%m-%d %H:%M:%S'),
-                endtime=datetime.strptime(endtime, '%Y-%m-%d %H:%M:%S'),
+                starttime = datetime.strptime(starttime, '%Y-%m-%d %H:%M'),
+                endtime = datetime.strptime(endtime, '%Y-%m-%d %H:%M'),
                 status=status,
                 host_id=host.phonenumber  # phonenumber van de ingelogde gebruiker
             )
