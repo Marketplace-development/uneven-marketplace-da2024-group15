@@ -12,12 +12,65 @@ SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 @main.route('/')
+def login():
+    """
+    Startpagina: toont de loginpagina.
+    Als een gebruiker al ingelogd is, wordt deze doorgestuurd naar de dashboardpagina.
+    """
+    if 'username' in session:
+        return redirect(url_for('main.index'))
+    return render_template('login.html')
+
+@main.route('/login', methods=['GET', 'POST'])
+def login_post():
+    """
+    Verwerkt de login van de gebruiker. Controleert de lokale database op de ingevoerde gebruikersnaam.
+    Als succesvol, wordt de gebruiker doorgestuurd naar de dashboardpagina (index).
+    """
+    if request.method == 'POST':
+        username = request.form.get('username')
+        
+        # Controleer of de gebruikersnaam bestaat in de lokale database
+        user = User.query.filter_by(username=username).first()
+        
+        if user:  # Gebruiker gevonden
+            session['username'] = username  # Sla de gebruikersnaam op in de sessie
+            flash("You are now logged in", "success")
+            return redirect(url_for('main.index'))
+        else:
+            flash("This username does not exist", "danger")
+            return redirect(url_for('main.login'))
+
+    return render_template('login.html')
+
+@main.route('/logout', methods=['POST'])
+def logout():
+    """
+    Verwerkt het uitloggen van de gebruiker. De sessie wordt gewist en de gebruiker
+    wordt teruggestuurd naar de loginpagina.
+    """
+    session.pop('username', None)
+    flash("You have been logged out", "success")
+    return redirect(url_for('main.login'))
+
+@main.route('/index')
 def index():
-    username = session.get('username')  # Haal de username op uit de sessie
-    return render_template('index.html', username=username)
+    """
+    Dashboardpagina die alleen toegankelijk is als een gebruiker is ingelogd.
+    """
+    if 'username' not in session:
+        return redirect(url_for('main.login'))
+    
+    username = session['username']
+    # Voorbeeld van hoe listings kunnen worden toegevoegd (indien relevant)
+    listings = ParkingSpot.query.filter_by(host_id=User.query.filter_by(username=username).first().phonenumber).all()
+    return render_template('index.html', username=username, listings=listings)
 
 @main.route('/register', methods=['GET', 'POST'])
 def register():
+    """
+    Registratiepagina. Voegt nieuwe gebruikers toe aan de database en registreert deze in Supabase.
+    """
     if request.method == 'POST':
         username = request.form.get('username')
         phonenumber = request.form.get('phonenumber')
@@ -75,40 +128,26 @@ def register():
 
     return render_template('register.html')
 
-
-
-@main.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        username = request.form.get('username')
-        
-        # Controleer of de gebruikersnaam bestaat in de lokale database
-        user = User.query.filter_by(username=username).first()
-        
-        if user:  # Gebruiker gevonden
-            session['username'] = username  # Sla de gebruikersnaam op in de sessie
-            flash("You are now logged in", "success")
-            return redirect(url_for('main.index'))  # Stuur gebruiker terug naar de hoofdpagina
-        else:
-            flash("This username does not exist", "danger")
-            return redirect(url_for('main.login'))
-
-    return render_template('login.html')
-
-@main.route('/logout', methods=['POST'])
-def logout():
-    session.pop('username', None)  # Verwijder de gebruikersnaam uit de sessie
-    flash("You have been logged out", "success")
-    return redirect(url_for('main.index'))
-
-
 @main.route('/listings')
 def listings():
-    # Placeholder voor listings view
-    return render_template('listings.html')
+    """
+    Pagina voor alle beschikbare parkeerplaatsen (voorbeeldimplementatie).
+    """
+    if 'username' not in session:
+        flash("You need to be logged in to view listings.", "danger")
+        return redirect(url_for('main.login'))
+    
+    username = session['username']
+    user = User.query.filter_by(username=username).first()
+    listings = ParkingSpot.query.filter_by(host_id=user.phonenumber).all()
+
+    return render_template('listings.html', listings=listings)
 
 @main.route('/add_listing', methods=['GET', 'POST'])
 def add_listing():
+    """
+    Pagina voor het toevoegen van een nieuwe parkeerplaats. Vereist login.
+    """
     if 'username' not in session:
         flash("You need to be logged in to add a listing.", "danger")
         return redirect(url_for('main.login'))
@@ -159,5 +198,6 @@ def add_listing():
             return redirect(url_for('main.add_listing'))
 
     return render_template('add_listing.html')
+
 
 
