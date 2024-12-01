@@ -23,7 +23,7 @@
                     <li class="list-group-item">
                         <strong>{{ listing.name }}</strong> - {{ listing.location }} (€{{ listing.price }})
                         <p>{{ listing.description }}</p>
-                        <small>Available: {{ listing.timeslot.strftime('%Y-%m-%d %H:%M') }}</small>
+                        <small>Available from: {{ listing.starttime.strftime('%Y-%m-%d %H:%M') }} to {{ listing.endtime.strftime('%Y-%m-%d %H:%M') }}</small>
                     </li>
                 {% endfor %}
             </ul>
