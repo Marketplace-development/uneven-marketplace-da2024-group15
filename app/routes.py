@@ -62,9 +62,14 @@ def index():
         return redirect(url_for('main.login'))
     
     username = session['username']
-    # Voorbeeld van hoe listings kunnen worden toegevoegd (indien relevant)
-    listings = ParkingSpot.query.filter_by(host_id=User.query.filter_by(username=username).first().phonenumber).all()
-    return render_template('index.html', username=username, listings=listings)
+    user = User.query.filter_by(username=username).first()
+
+    # Haal alle actieve parkeerplaatsvermeldingen op
+    active_listings = ParkingSpot.query.filter_by(status='available').all()
+
+    return render_template('index.html', username=username, active_listings=active_listings)
+
+
 
 @main.route('/register', methods=['GET', 'POST'])
 def register():
@@ -199,5 +204,25 @@ def add_listing():
 
     return render_template('add_listing.html')
 
+@main.route('/account')
+def account():
+    """
+    Accountpagina: toont gebruikersinformatie en listings van de gebruiker.
+    """
+    if 'username' not in session:
+        flash("You need to be logged in to view your account.", "danger")
+        return redirect(url_for('main.login'))
+
+    username = session['username']
+    user = User.query.filter_by(username=username).first()
+
+    if not user:
+        flash("User not found in the database.", "danger")
+        return redirect(url_for('main.index'))
+
+    # Ophalen van listings van de gebruiker
+    listings = ParkingSpot.query.filter_by(host_id=user.phonenumber).all()
+
+    return render_template('account.html', user=user, listings=listings)
 
 

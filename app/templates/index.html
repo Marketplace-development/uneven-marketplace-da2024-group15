@@ -14,6 +14,7 @@
                 <form action="{{ url_for('main.logout') }}" method="post">
                     <button type="submit" class="btn btn-danger">Logout</button>
                 </form>
+                <a href="{{ url_for('main.account') }}" class="btn btn-primary mt-2">My Account</a>
             </div>
 
             <!-- Actions Section -->
@@ -24,8 +25,25 @@
                 <a href="{{ url_for('main.listings') }}"><button class="btn btn-info">View All Listings</button></a>
             </div>
         </div>
+
+        <!-- Listings Section -->
+        <div class="row mt-5">
+            <h2>Active Parking Spots</h2>
+            <div class="d-flex flex-wrap">
+                {% for listing in active_listings %}
+                    <div class="card m-2" style="width: 18rem;">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ listing.location }}</h5>
+                            <p class="card-text"><strong>Price:</strong> ${{ listing.price }}</p>
+                            <p class="card-text"><small class="text-muted">{{ listing.description }}</small></p>
+                            <a href="#" class="btn btn-primary">View Details</a>
+                        </div>
+                    </div>
+                {% else %}
+                    <p>No active parking spots available at the moment.</p>
+                {% endfor %}
+            </div>
+        </div>
     </div>
 </body>
 </html>
-
-
