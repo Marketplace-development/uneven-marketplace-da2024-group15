@@ -57,6 +57,7 @@ def logout():
 def index():
     """
     Dashboardpagina die alleen toegankelijk is als een gebruiker is ingelogd.
+    Toont alleen beschikbare parkeerplaatsen van andere gebruikers.
     """
     if 'username' not in session:
         return redirect(url_for('main.login'))
@@ -64,10 +65,16 @@ def index():
     username = session['username']
     user = User.query.filter_by(username=username).first()
 
-    # Haal alle parkeerplaatsen op die beschikbaar zijn
-    active_listings = db.session.query(ParkingSpot, Availability).join(Availability).all()
+    # Haal alle parkeerplaatsen op die beschikbaar zijn, maar niet van de huidige gebruiker
+    active_listings = (
+        db.session.query(ParkingSpot, Availability)
+        .join(Availability)
+        .filter(ParkingSpot.host_id != user.phonenumber)
+        .all()
+    )
 
     return render_template('index.html', username=username, active_listings=active_listings)
+
 
 
 @main.route('/register', methods=['GET', 'POST'])
@@ -301,6 +308,7 @@ def view_details(parking_spot_id):
 def book_now(parking_spot_id):
     """
     Route to book a parking spot, making it unavailable and associating it with the current user.
+    Zorgt ervoor dat gebruikers alleen parkeerplaatsen van andere hosts kunnen boeken.
     """
     if 'username' not in session:
         flash("You need to be logged in to book a parking spot.", "danger")
@@ -332,10 +340,6 @@ def book_now(parking_spot_id):
 
     if not parking_spot or not availability:
         flash("Parking spot not found or no availability available.", "danger")
-        return redirect(url_for('main.index'))
-
-    if parking_spot.host_id == user.phonenumber:
-        flash("You cannot book your own parking spot.", "danger")
         return redirect(url_for('main.index'))
 
     try:
