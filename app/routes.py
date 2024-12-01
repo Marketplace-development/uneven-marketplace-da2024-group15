@@ -445,3 +445,22 @@ def submit_review(parking_spot_id):
         flash(f"An error occurred while submitting your review: {e}", "danger")
 
     return redirect(url_for('main.view_booked_spots'))
+
+
+@main.route('/search_listings', methods=['GET'])
+def search_listings():
+    """
+    Zoek naar parkeerplaatsen op basis van de locatie.
+    """
+    if 'username' not in session:
+        flash("You need to be logged in to search listings.", "danger")
+        return redirect(url_for('main.login'))
+
+    city = request.args.get('city', '').strip().lower()
+
+    # Zoek parkeerplaatsen met een locatie die overeenkomt met de opgegeven stad
+    matching_listings = db.session.query(ParkingSpot, Availability).join(Availability).filter(
+        db.func.lower(ParkingSpot.location) == city
+    ).all()
+
+    return render_template('index.html', username=session['username'], active_listings=matching_listings, search_city=city)
