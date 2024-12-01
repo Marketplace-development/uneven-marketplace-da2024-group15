@@ -169,7 +169,8 @@ def add_listing():
         description = request.form.get('description')
         location = request.form.get('location')
         price = request.form.get('price')
-        timeslot = request.form.get('timeslot')
+        starttime = request.form.get('starttime')
+        endtime = request.form.get('endtime')
         status = request.form.get('status')
 
         # Controleer of de gebruiker een Host is
@@ -187,7 +188,8 @@ def add_listing():
                 description=description,
                 location=location,
                 price=price,
-                timeslot=datetime.strptime(timeslot, '%Y-%m-%d %H:%M:%S'),
+                starttime=datetime.strptime(starttime, '%Y-%m-%d %H:%M:%S'),
+                endtime=datetime.strptime(endtime, '%Y-%m-%d %H:%M:%S'),
                 status=status,
                 host_id=host.phonenumber  # phonenumber van de ingelogde gebruiker
             )
