@@ -13,7 +13,7 @@
             <a href="{{ url_for('main.index') }}" class="btn btn-secondary">Back to Home</a>
         </div>
         
-        <!-- Flash-meldingen -->
+        <!-- Flash messages -->
         <div class="container mt-4">
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
@@ -27,7 +27,7 @@
             {% endwith %}
         </div>
 
-        <!-- Gebruikersdetails -->
+        <!-- User details -->
         <div class="card mb-4">
             <div class="card-body">
                 <h3>Account Details</h3>
@@ -37,17 +37,18 @@
             </div>
         </div>
     
-        <!-- Mijn parkeerplaatsen -->
+        <!-- My Parking Spots -->
         <h3>My Parkingspots</h3>
         {% if listings %}
             <ul class="list-group">
                 {% for listing in listings %}
                     <li class="list-group-item">
-                        <strong>{{ listing.name }}</strong> - {{ listing.location }}
+                        <strong>{{ listing.name }}</strong> <br>
+                        <strong>Address:</strong> {{ listing.street_address }}, {{ listing.city }}, {{ listing.postal_code }} <br>
                         <p>{{ listing.description }}</p>
                         <p><strong>Status:</strong> {% if listing.availabilities|length > 0 %}Available{% else %}Not Available{% endif %}</p>
     
-                        <!-- Beschikbaarheden -->
+                        <!-- Availabilities -->
                         {% if listing.availabilities|length > 0 %}
                             <h5>Availability:</h5>
                             <ul class="list-group">
@@ -62,7 +63,7 @@
                             </ul>
                         {% endif %}
     
-                        <!-- Knoppen -->
+                        <!-- Buttons -->
                         <a href="{{ url_for('main.make_available', parking_spot_id=listing.id) }}" class="btn btn-primary mt-2">Make Available</a>
                         <a href="{{ url_for('main.view_reviews', parking_spot_id=listing.id) }}" class="btn btn-info mt-2">View Reviews</a>
                     </li>
@@ -72,7 +73,7 @@
             <p>You have no parkingspots at the moment.</p>
         {% endif %}
     
-        <!-- Gekoppelde acties -->
+        <!-- Linked actions -->
         <div class="mt-4">
             <a href="{{ url_for('main.view_booked_spots') }}" class="btn btn-info">View Booked Parking Spots</a>
         </div>
@@ -82,7 +83,3 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
 </body>
 </html>
-
-
-
-

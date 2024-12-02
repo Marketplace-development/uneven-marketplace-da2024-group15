@@ -8,7 +8,7 @@
 <body>
     <div class="container mt-5">
         <h1>Reviews for {{ parking_spot.name }}</h1>
-        <p><strong>Location:</strong> {{ parking_spot.location }}</p>
+        <p><strong>Address:</strong> {{ parking_spot.street_address }}, {{ parking_spot.city }}, {{ parking_spot.postal_code }}</p>
         <p><strong>Description:</strong> {{ parking_spot.description }}</p>
 
         <a href="{{ url_for('main.account') }}" class="btn btn-secondary mt-3">Back to My Account</a>
@@ -34,4 +34,3 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
 </body>
 </html>
-

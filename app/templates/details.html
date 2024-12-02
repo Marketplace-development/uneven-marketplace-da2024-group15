@@ -8,7 +8,7 @@
 <body>
     <div class="container mt-5">
         <h1>{{ parking_spot.name }}</h1>
-        <p><strong>Location:</strong> {{ parking_spot.location }}</p>
+        <p><strong>Address:</strong> {{ parking_spot.street_address }}, {{ parking_spot.city }}, {{ parking_spot.postal_code }}</p>
         <p><strong>Description:</strong> {{ parking_spot.description }}</p>
         <p><strong>Price:</strong> €{{ availability.price }}</p>
         <p><strong>Available From:</strong> {{ availability.starttime.strftime('%Y-%m-%d %H:%M') }}</p>
@@ -39,4 +39,3 @@
     </div>
 </body>
 </html>
-

@@ -30,8 +30,10 @@ class ParkingSpot(db.Model):
     id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)  
     name = db.Column(db.Text, nullable=False) 
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)  
-    description = db.Column(db.Text, nullable=True)  
-    location = db.Column(db.Text, nullable=False)  
+    description = db.Column(db.Text, nullable=True) 
+    street_address = db.Column(db.Text, nullable=False)
+    postal_code = db.Column(db.BigInteger, nullable=False)
+    city = db.Column(db.Text, nullable=False)  
     host_id = db.Column(db.BigInteger, db.ForeignKey('host.phonenumber'), nullable=False)  
     
     host = db.relationship('Host', backref=db.backref('parking_spots', lazy=True))

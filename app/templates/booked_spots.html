@@ -28,7 +28,8 @@
             <ul class="list-group">
                 {% for booking in booked_spots %}
                     <li class="list-group-item">
-                        <strong>{{ booking.parking_spot.name }}</strong> - {{ booking.parking_spot.location }}
+                        <strong>{{ booking.parking_spot.name }}</strong><br>
+                        <strong>Address:</strong> {{ booking.parking_spot.street_address }}, {{ booking.parking_spot.city }}, {{ booking.parking_spot.postal_code }}<br>
                         <p>{{ booking.parking_spot.description }}</p>
                         <p><strong>Booking Date:</strong> {{ booking.transaction_date.strftime('%Y-%m-%d %H:%M') }}</p>
                         {% if not booking.parking_spot.reviews %}
@@ -48,5 +49,3 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
 </body>
 </html>
-
-

@@ -59,7 +59,7 @@
                     <div class="card m-2" style="width: 18rem;">
                         <div class="card-body">
                             <h5 class="card-title">{{ parking_spot.name }}</h5>
-                            <p><strong>Location:</strong> {{ parking_spot.location }}</p>
+                            <p><strong>Address:</strong> {{ parking_spot.street_address }}, {{ parking_spot.city }}, {{ parking_spot.postal_code }}</p>
                             <p><strong>Price:</strong> €{{ availability.price }}</p>
                             <p><strong>Available From:</strong> {{ availability.starttime.strftime('%Y-%m-%d %H:%M') }}</p>
                             <p><strong>To:</strong> {{ availability.endtime.strftime('%Y-%m-%d %H:%M') }}</p>

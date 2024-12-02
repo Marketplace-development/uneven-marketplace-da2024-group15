@@ -8,10 +8,10 @@
 <body>
     <div class="container mt-5">
         <h1>Edit Availability for {{ parking_spot.name }}</h1>
-        <p><strong>Location:</strong> {{ parking_spot.location }}</p>
+        <p><strong>Address:</strong> {{ parking_spot.street_address }}, {{ parking_spot.city }}, {{ parking_spot.postal_code }}</p>
         <p><strong>Description:</strong> {{ parking_spot.description }}</p>
 
-        <!-- Flash-meldingen -->
+        <!-- Flash Messages -->
         <div class="container mt-4">
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
