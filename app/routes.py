@@ -234,7 +234,7 @@ def account():
 @main.route('/make_available/<int:parking_spot_id>', methods=['GET', 'POST'])
 def make_available(parking_spot_id):
     """
-    Route to mark a parking spot as available by adding availability slots.
+    Route to add availability for a parking spot. Ensures no overlapping time periods are added.
     """
     if 'username' not in session:
         flash("You need to be logged in to perform this action.", "danger")
@@ -257,23 +257,33 @@ def make_available(parking_spot_id):
         endtime = request.form.get('endtime')
         price = request.form.get('price')
 
-        # Controleer of starttijd en eindtijd geldig zijn
         try:
+            # Validate times
             start_datetime = datetime.strptime(starttime, "%Y-%m-%dT%H:%M")
             end_datetime = datetime.strptime(endtime, "%Y-%m-%dT%H:%M")
             if end_datetime <= start_datetime:
                 flash("End time must be later than start time.", "danger")
-                return redirect(url_for('main.make_available', parking_spot_id=parking_spot_id))
+                return redirect(url_for('main.account'))
         except ValueError:
             flash("Invalid date format. Please use the correct format (YYYY-MM-DD HH:MM).", "danger")
-            return redirect(url_for('main.make_available', parking_spot_id=parking_spot_id))
+            return redirect(url_for('main.account'))
 
-        if not price or float(price) <= 0:
-            flash("Please provide a valid price greater than 0.", "danger")
-            return redirect(url_for('main.make_available', parking_spot_id=parking_spot_id))
+        # Check for overlapping availability
+        overlapping = db.session.query(Availability).filter(
+            Availability.parkingspot_id == parking_spot_id,
+            db.or_(
+                db.and_(Availability.starttime <= start_datetime, Availability.endtime > start_datetime),
+                db.and_(Availability.starttime < end_datetime, Availability.endtime >= end_datetime),
+                db.and_(Availability.starttime >= start_datetime, Availability.endtime <= end_datetime)
+            )
+        ).first()
 
+        if overlapping:
+            flash("This parking spot is already available during this time period.", "danger")
+            return redirect(url_for('main.account'))
+
+        # Add new availability
         try:
-            # Voeg beschikbaarheid toe aan de database
             availability = Availability(
                 starttime=start_datetime,
                 endtime=end_datetime,
@@ -284,12 +294,11 @@ def make_available(parking_spot_id):
             db.session.commit()
 
             flash("Availability successfully added!", "success")
-            return redirect(url_for('main.account'))  # Terug naar accountpagina na succesvolle opslag
-
+            return redirect(url_for('main.account'))
         except Exception as e:
             db.session.rollback()
             flash(f"An error occurred: {e}", "danger")
-            return redirect(url_for('main.make_available', parking_spot_id=parking_spot_id))
+            return redirect(url_for('main.account'))
 
     return render_template('make_available.html', parking_spot=parking_spot)
 

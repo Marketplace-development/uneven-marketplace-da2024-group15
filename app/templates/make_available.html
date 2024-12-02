@@ -11,6 +11,25 @@
         <p><strong>Location:</strong> {{ parking_spot.location }}</p>
         <p><strong>Description:</strong> {{ parking_spot.description }}</p>
 
+        <!-- Current Availability -->
+        <div class="mb-4">
+            <h3>Current Availability</h3>
+            {% if parking_spot.availabilities %}
+                <ul class="list-group">
+                    {% for availability in parking_spot.availabilities %}
+                        <li class="list-group-item">
+                            From: {{ availability.starttime.strftime('%Y-%m-%d %H:%M') }} <br>
+                            To: {{ availability.endtime.strftime('%Y-%m-%d %H:%M') }} <br>
+                            Price: €{{ availability.price }}
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>No availability has been set yet for this parking spot.</p>
+            {% endif %}
+        </div>
+
+        <!-- Add New Availability -->
         <form method="POST" action="{{ url_for('main.make_available', parking_spot_id=parking_spot.id) }}">
             <div class="mb-3">
                 <label for="starttime" class="form-label">Start Time (YYYY-MM-DD HH:MM)</label>
@@ -23,15 +42,16 @@
             </div>
             <div class="mb-3">
                 <label for="price" class="form-label">Price (€)</label>
-                <input type="number" class="form-control" id="price" name="price" step="1" min="0" required placeholder="Enter price in € (e.g., 23.50)">
-                <div class="form-text">Adjust price by 1 euro increments using the arrow keys.</div>
+                <input type="number" class="form-control" id="price" name="price" step="0.01" min="0" required placeholder="Enter price in € (e.g., 23.50)">
+                <div class="form-text">Adjust price using the arrow keys.</div>
             </div>
             <button type="submit" class="btn btn-primary" id="submit-button">Save Availability</button>
-            <a href="{{ url_for('main.index') }}" class="btn btn-secondary">Cancel</a>
+            <a href="{{ url_for('main.account') }}" class="btn btn-secondary">Cancel</a>
         </form>
     </div>
 
     <script>
+        // Client-side validation for time inputs
         function validateTimes() {
             const startTime = document.getElementById('starttime').value;
             const endTime = document.getElementById('endtime').value;
@@ -47,8 +67,12 @@
             }
         }
     </script>
+
+    <!-- Include Bootstrap JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
 </body>
 </html>
+
 
 
 

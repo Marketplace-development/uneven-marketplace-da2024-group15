@@ -12,6 +12,22 @@
             <!-- Back button -->
             <a href="{{ url_for('main.index') }}" class="btn btn-secondary">Back to Home</a>
         </div>
+        
+        <!-- Flash-meldingen -->
+        <div class="container mt-4">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        <!-- Gebruikersdetails -->
         <div class="card mb-4">
             <div class="card-body">
                 <h3>Account Details</h3>
@@ -21,6 +37,7 @@
             </div>
         </div>
     
+        <!-- Mijn parkeerplaatsen -->
         <h3>My Parkingspots</h3>
         {% if listings %}
             <ul class="list-group">
@@ -30,9 +47,8 @@
                         <p>{{ listing.description }}</p>
                         <p><strong>Status:</strong> {% if listing.availabilities|length > 0 %}Available{% else %}Not Available{% endif %}</p>
     
-                        {% if listing.availabilities|length == 0 %}
-                            <a href="{{ url_for('main.make_available', parking_spot_id=listing.id) }}" class="btn btn-primary mt-2">Make Available</a>
-                        {% endif %}
+                        <!-- Zorg dat de knop altijd zichtbaar blijft -->
+                        <a href="{{ url_for('main.make_available', parking_spot_id=listing.id) }}" class="btn btn-primary mt-2">Make Available</a>
                         
                         <a href="{{ url_for('main.view_reviews', parking_spot_id=listing.id) }}" class="btn btn-info mt-2">View Reviews</a>
                     </li>
@@ -42,6 +58,7 @@
             <p>You have no parkingspots at the moment.</p>
         {% endif %}
     
+        <!-- Gekoppelde acties -->
         <div class="mt-4">
             <a href="{{ url_for('main.view_booked_spots') }}" class="btn btn-info">View Booked Parking Spots</a>
         </div>
@@ -51,5 +68,6 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
 </body>
 </html>
+
 
 
