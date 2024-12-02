@@ -296,15 +296,24 @@ def make_available(parking_spot_id):
 @main.route('/details/<int:parking_spot_id>')
 def view_details(parking_spot_id):
     """
-    Route to view details of a specific parking spot.
+    Route to view details of a specific parking spot, including reviews.
     """
+    # Haal parkeerplaats en beschikbaarheid op
     parking_spot = db.session.query(ParkingSpot, Availability).join(Availability).filter(ParkingSpot.id == parking_spot_id).first()
 
     if not parking_spot:
         flash("Parking spot not found or no availability available.", "danger")
         return redirect(url_for('main.index'))
 
-    return render_template('details.html', parking_spot=parking_spot[0], availability=parking_spot[1])
+    # Haal reviews op voor de parkeerplaats
+    reviews = Review.query.filter_by(parking_spot_id=parking_spot_id).all()
+
+    return render_template(
+        'details.html',
+        parking_spot=parking_spot[0],
+        availability=parking_spot[1],
+        reviews=reviews
+    )
 
 @main.route('/book/<int:parking_spot_id>', methods=['POST'])
 def book_now(parking_spot_id):
