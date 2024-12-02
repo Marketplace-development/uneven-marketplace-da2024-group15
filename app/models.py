@@ -9,7 +9,8 @@ class User(db.Model):
     username = db.Column(db.String, unique=True, nullable=False)  
     phonenumber = db.Column(db.BigInteger, primary_key=True)  
     registration_date = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)  
-
+    email = db.Column(db.Text, unique=True, nullable=False)
+    
 class Host(db.Model):
     __tablename__ = 'host'
     phonenumber = db.Column(db.BigInteger, db.ForeignKey('user.phonenumber'), primary_key=True)  
