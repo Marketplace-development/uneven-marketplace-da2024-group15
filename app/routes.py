@@ -498,3 +498,10 @@ def search_listings():
     ).all()
 
     return render_template('index.html', username=session['username'], active_listings=matching_listings, search_city=city)
+
+@main.route('/about')
+def about():
+    """
+    Render de About Us-pagina.
+    """
+    return render_template('about.html')
