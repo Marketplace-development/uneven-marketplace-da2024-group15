@@ -47,9 +47,23 @@
                         <p>{{ listing.description }}</p>
                         <p><strong>Status:</strong> {% if listing.availabilities|length > 0 %}Available{% else %}Not Available{% endif %}</p>
     
-                        <!-- Zorg dat de knop altijd zichtbaar blijft -->
+                        <!-- Beschikbaarheden -->
+                        {% if listing.availabilities|length > 0 %}
+                            <h5>Availability:</h5>
+                            <ul class="list-group">
+                                {% for availability in listing.availabilities %}
+                                    <li class="list-group-item">
+                                        From: {{ availability.starttime.strftime('%Y-%m-%d %H:%M') }} <br>
+                                        To: {{ availability.endtime.strftime('%Y-%m-%d %H:%M') }} <br>
+                                        Price: €{{ availability.price }}
+                                        <a href="{{ url_for('main.edit_availability', availability_id=availability.id) }}" class="btn btn-warning btn-sm mt-2">Edit</a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+    
+                        <!-- Knoppen -->
                         <a href="{{ url_for('main.make_available', parking_spot_id=listing.id) }}" class="btn btn-primary mt-2">Make Available</a>
-                        
                         <a href="{{ url_for('main.view_reviews', parking_spot_id=listing.id) }}" class="btn btn-info mt-2">View Reviews</a>
                     </li>
                 {% endfor %}
@@ -68,6 +82,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
 </body>
 </html>
+
 
 
 
