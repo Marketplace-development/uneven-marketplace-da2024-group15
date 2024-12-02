@@ -57,6 +57,7 @@ def logout():
 def index():
     """
     Dashboardpagina die alleen toegankelijk is als een gebruiker is ingelogd.
+    Toont alleen beschikbare parkeerplaatsen van andere gebruikers.
     """
     if 'username' not in session:
         return redirect(url_for('main.login'))
@@ -64,8 +65,12 @@ def index():
     username = session['username']
     user = User.query.filter_by(username=username).first()
 
-    # Haal alle parkeerplaatsen op die beschikbaar zijn
-    active_listings = db.session.query(ParkingSpot, Availability).join(Availability).all()
+    # Haal alle parkeerplaatsen op die beschikbaar zijn, maar niet van de huidige gebruiker
+    active_listings = (
+        db.session.query(ParkingSpot, Availability)
+        .join(Availability)
+        .all()
+    )
 
     return render_template('index.html', username=username, active_listings=active_listings)
 
@@ -78,8 +83,9 @@ def register():
     if request.method == 'POST':
         username = request.form.get('username')
         phonenumber = request.form.get('phonenumber')
+        email = request.form.get('email')
 
-        print(f"Received username: {username}, phonenumber: {phonenumber}")  # Debug
+        print(f"Received username: {username}, phonenumber: {phonenumber}, email: {email}")  # Debug
 
         # Validatie: Controleer in de lokale database
         if User.query.filter_by(username=username).first():
@@ -87,6 +93,9 @@ def register():
             return redirect(url_for('main.register'))
         if User.query.filter_by(phonenumber=phonenumber).first():
             flash(f"Phone number '{phonenumber}' already exists in the local database!", "danger")
+            return redirect(url_for('main.register'))
+        if User.query.filter_by(email=email).first():
+            flash(f"Email '{email}' already exists in the local database!", "danger")
             return redirect(url_for('main.register'))
 
         # Validatie: Controleer in Supabase
@@ -100,7 +109,8 @@ def register():
         try:
             response = supabase.table('user').upsert({
                 'username': username,
-                'phonenumber': phonenumber
+                'phonenumber': phonenumber,
+                'email': email
             }).execute()
             print(f"User successfully added or updated in Supabase: {response.data}")  # Debugging
         except Exception as e:
@@ -111,7 +121,7 @@ def register():
         # Controleer opnieuw in de lokale database voordat je invoegt
         if not User.query.filter_by(username=username).first():
             try:
-                new_user = User(username=username, phonenumber=phonenumber)
+                new_user = User(username=username, phonenumber=phonenumber, email=email)
                 db.session.add(new_user)
                 db.session.commit()
                 print("User successfully added to local database.")  # Debugging
@@ -247,15 +257,26 @@ def make_available(parking_spot_id):
         endtime = request.form.get('endtime')
         price = request.form.get('price')
 
-        if not starttime or not endtime or not price:
-            flash("Please provide valid availability details.", "danger")
+        # Controleer of starttijd en eindtijd geldig zijn
+        try:
+            start_datetime = datetime.strptime(starttime, "%Y-%m-%dT%H:%M")
+            end_datetime = datetime.strptime(endtime, "%Y-%m-%dT%H:%M")
+            if end_datetime <= start_datetime:
+                flash("End time must be later than start time.", "danger")
+                return redirect(url_for('main.make_available', parking_spot_id=parking_spot_id))
+        except ValueError:
+            flash("Invalid date format. Please use the correct format (YYYY-MM-DD HH:MM).", "danger")
+            return redirect(url_for('main.make_available', parking_spot_id=parking_spot_id))
+
+        if not price or float(price) <= 0:
+            flash("Please provide a valid price greater than 0.", "danger")
             return redirect(url_for('main.make_available', parking_spot_id=parking_spot_id))
 
         try:
             # Voeg beschikbaarheid toe aan de database
             availability = Availability(
-                starttime=datetime.strptime(starttime, "%Y-%m-%dT%H:%M"),
-                endtime=datetime.strptime(endtime, "%Y-%m-%dT%H:%M"),
+                starttime=start_datetime,
+                endtime=end_datetime,
                 parkingspot_id=parking_spot_id,
                 price=price
             )
@@ -289,6 +310,7 @@ def view_details(parking_spot_id):
 def book_now(parking_spot_id):
     """
     Route to book a parking spot, making it unavailable and associating it with the current user.
+    Zorgt ervoor dat gebruikers alleen parkeerplaatsen van andere hosts kunnen boeken.
     """
     if 'username' not in session:
         flash("You need to be logged in to book a parking spot.", "danger")
@@ -320,10 +342,6 @@ def book_now(parking_spot_id):
 
     if not parking_spot or not availability:
         flash("Parking spot not found or no availability available.", "danger")
-        return redirect(url_for('main.index'))
-
-    if parking_spot.host_id == user.phonenumber:
-        flash("You cannot book your own parking spot.", "danger")
         return redirect(url_for('main.index'))
 
     try:
@@ -394,7 +412,6 @@ def add_review(parking_spot_id):
         return redirect(url_for('main.view_booked_spots'))
 
     return render_template('add_review.html', parking_spot=parking_spot)
-
 
 @main.route('/submit_review/<int:parking_spot_id>', methods=['POST'])
 def submit_review(parking_spot_id):
@@ -482,3 +499,11 @@ def search_listings():
     ).all()
 
     return render_template('index.html', username=session['username'], active_listings=matching_listings, search_city=city)
+
+@main.route('/about')
+def about():
+    """
+    Render de About Us-pagina.
+    """
+    return render_template('about.html')
+

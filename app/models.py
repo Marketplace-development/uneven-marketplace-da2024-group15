@@ -8,6 +8,7 @@ class User(db.Model):
     __tablename__ = 'user'
     username = db.Column(db.String, unique=True, nullable=False)  
     phonenumber = db.Column(db.BigInteger, primary_key=True)  
+    email = db.Column(db.Text, unique=True, nullable=False)
     registration_date = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)  
 
 class Host(db.Model):
@@ -46,7 +47,6 @@ class Availability(db.Model):
 
     parking_spot = db.relationship('ParkingSpot', backref=db.backref('availabilities', lazy=True))
 
-
 # Transaction Model
 class Transaction(db.Model):
     __tablename__ = 'transaction'
@@ -79,5 +79,6 @@ class Review(db.Model):
 class AlembicVersion(db.Model):
     __tablename__ = 'alembic_version'
     version_num = db.Column(db.String, primary_key=True)
+
 
     
