@@ -18,35 +18,15 @@
             </div>
             <div class="mb-3">
                 <label for="endtime" class="form-label">End Time (YYYY-MM-DD HH:MM)</label>
-                <input type="datetime-local" class="form-control" id="endtime" name="endtime" required oninput="validateTimes()">
-                <div class="form-text text-danger d-none" id="time-error">End time cannot be earlier than start time.</div>
+                <input type="datetime-local" class="form-control" id="endtime" name="endtime" required>
             </div>
             <div class="mb-3">
                 <label for="price" class="form-label">Price (€)</label>
-                <input type="number" class="form-control" id="price" name="price" step="1" min="0" required placeholder="Enter price in € (e.g., 23.50)">
-                <div class="form-text">Adjust price by 1 euro increments using the arrow keys.</div>
+                <input type="number" step="0.01" class="form-control" id="price" name="price" required>
             </div>
-            <button type="submit" class="btn btn-primary" id="submit-button">Save Availability</button>
-            <a href="{{ url_for('main.index') }}" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary">Save Availability</button>
+            <a href="{{ url_for('main.account') }}" class="btn btn-secondary">Cancel</a>
         </form>
     </div>
-
-    <script>
-        function validateTimes() {
-            const startTime = document.getElementById('starttime').value;
-            const endTime = document.getElementById('endtime').value;
-            const errorDiv = document.getElementById('time-error');
-            const submitButton = document.getElementById('submit-button');
-
-            if (startTime && endTime && new Date(endTime) < new Date(startTime)) {
-                errorDiv.classList.remove('d-none');
-                submitButton.disabled = true;
-            } else {
-                errorDiv.classList.add('d-none');
-                submitButton.disabled = false;
-            }
-        }
-    </script>
 </body>
 </html>
-
