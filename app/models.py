@@ -8,6 +8,7 @@ class User(db.Model):
     __tablename__ = 'user'
     username = db.Column(db.String, unique=True, nullable=False)  
     phonenumber = db.Column(db.BigInteger, primary_key=True)  
+    email = db.Column(db.Text, unique=True, nullable=False)
     registration_date = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)  
 
 class Host(db.Model):
