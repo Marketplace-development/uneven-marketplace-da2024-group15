@@ -69,6 +69,7 @@ def index():
 
     return render_template('index.html', username=username, active_listings=active_listings)
 
+
 @main.route('/register', methods=['GET', 'POST'])
 def register():
     """
@@ -77,9 +78,8 @@ def register():
     if request.method == 'POST':
         username = request.form.get('username')
         phonenumber = request.form.get('phonenumber')
-        email = request.form.get('email')
 
-        print(f"Received username: {username}, phonenumber: {phonenumber}, email: {email}")  # Debug
+        print(f"Received username: {username}, phonenumber: {phonenumber}")  # Debug
 
         # Validatie: Controleer in de lokale database
         if User.query.filter_by(username=username).first():
@@ -87,9 +87,6 @@ def register():
             return redirect(url_for('main.register'))
         if User.query.filter_by(phonenumber=phonenumber).first():
             flash(f"Phone number '{phonenumber}' already exists in the local database!", "danger")
-            return redirect(url_for('main.register'))
-        if User.query.filter_by(email=email).first():
-            flash(f"Email '{email}' already exists in the local database!", "danger")
             return redirect(url_for('main.register'))
 
         # Validatie: Controleer in Supabase
@@ -103,8 +100,7 @@ def register():
         try:
             response = supabase.table('user').upsert({
                 'username': username,
-                'phonenumber': phonenumber,
-                'email': email
+                'phonenumber': phonenumber
             }).execute()
             print(f"User successfully added or updated in Supabase: {response.data}")  # Debugging
         except Exception as e:
@@ -115,7 +111,7 @@ def register():
         # Controleer opnieuw in de lokale database voordat je invoegt
         if not User.query.filter_by(username=username).first():
             try:
-                new_user = User(username=username, phonenumber=phonenumber, email=email)
+                new_user = User(username=username, phonenumber=phonenumber)
                 db.session.add(new_user)
                 db.session.commit()
                 print("User successfully added to local database.")  # Debugging
