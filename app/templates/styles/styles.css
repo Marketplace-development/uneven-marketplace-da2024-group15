@@ -1,12 +1,12 @@
 .get-in-touch {
-    background-color: #f8c0da; /* Lichtroze */
-    color: #000; /* Zwart */
+    background-color: #d1e7f5; /* Lichtblauw */
+    color: #08265f; /* Blauw */
     border-radius: 8px;
     padding: 20px;
 }
 
 .get-in-touch a {
-    color: #007bff; /* Blauwe links */
+    color: #021122; /* Blauwe links */
     text-decoration: none;
 }
 
@@ -15,15 +15,15 @@
 }
 
 .get-in-touch .btn {
-    background-color: #007bff;
+    background-color: #011021; /* Donkerder blauw */
     color: white;
     border: none;
     padding: 10px 20px;
     text-decoration: none;
     border-radius: 5px;
 }
+
 .get-in-touch img {
     vertical-align: middle;
     margin-right: 10px;
 }
-

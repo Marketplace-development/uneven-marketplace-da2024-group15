@@ -263,6 +263,7 @@ def make_available(parking_spot_id):
         flash("User not found in the database.", "danger")
         return redirect(url_for('main.index'))
 
+
     parking_spot = ParkingSpot.query.get(parking_spot_id)
     if not parking_spot or parking_spot.host_id != user.phonenumber:
         flash("Parking spot not found or you do not have permission to modify it.", "danger")
@@ -298,6 +299,7 @@ def make_available(parking_spot_id):
         if overlapping:
             flash("This parking spot is already available during this time period.", "danger")
             return redirect(url_for('main.make_available', parking_spot_id=parking_spot_id))
+
 
         # Add new availability
         try:
@@ -665,3 +667,44 @@ def edit_availability(availability_id):
             return redirect(url_for('main.edit_availability', availability_id=availability_id))
 
     return render_template('edit_availability.html', availability=availability, parking_spot=parking_spot)
+
+
+@main.route('/delete_parking_spot/<int:parking_spot_id>', methods=['POST'])
+def delete_parking_spot(parking_spot_id):
+    """
+    Route to delete a parking spot and its associated data.
+    """
+    if 'username' not in session:
+        flash("You need to be logged in to delete a parking spot.", "danger")
+        return redirect(url_for('main.login'))
+
+    username = session['username']
+    user = User.query.filter_by(username=username).first()
+
+    if not user:
+        flash("User not found in the database.", "danger")
+        return redirect(url_for('main.index'))
+
+    # Zoek de parkeerplaats op
+    parking_spot = ParkingSpot.query.get(parking_spot_id)
+    
+    if not parking_spot or parking_spot.host_id != user.phonenumber:
+        flash("Parking spot not found or you do not have permission to delete it.", "danger")
+        return redirect(url_for('main.account'))
+
+    try:
+        # Verwijder gerelateerde data (availabilities, transactions, reviews)
+        Availability.query.filter_by(parkingspot_id=parking_spot_id).delete()
+        Transaction.query.filter_by(parkingid=parking_spot_id).delete()
+        Review.query.filter_by(parking_spot_id=parking_spot_id).delete()
+        
+        # Verwijder de parkeerplaats zelf
+        db.session.delete(parking_spot)
+        db.session.commit()
+
+        flash(f"Parking spot '{parking_spot.name}' has been successfully deleted.", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"An error occurred while deleting the parking spot: {e}", "danger")
+
+    return redirect(url_for('main.account'))
