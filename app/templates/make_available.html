@@ -18,8 +18,8 @@
                 <ul class="list-group">
                     {% for availability in parking_spot.availabilities %}
                         <li class="list-group-item">
-                            From: {{ availability.starttime.strftime('%Y-%m-%d %H:%M') }} <br>
-                            To: {{ availability.endtime.strftime('%Y-%m-%d %H:%M') }} <br>
+                            From: {{ availability.starttime.strftime('%Y-%m-%d %H:00') }} <br>
+                            To: {{ availability.endtime.strftime('%Y-%m-%d %H:00') }} <br>
                             Price: €{{ availability.price }}
                         </li>
                     {% endfor %}
@@ -32,12 +32,14 @@
         <!-- Add New Availability -->
         <form method="POST" action="{{ url_for('main.make_available', parking_spot_id=parking_spot.id) }}">
             <div class="mb-3">
-                <label for="starttime" class="form-label">Start Time (YYYY-MM-DD HH:MM)</label>
-                <input type="datetime-local" class="form-control" id="starttime" name="starttime" required>
+                <label for="starttime" class="form-label">Start Time (YYYY-MM-DD HH)</label>
+                <input type="datetime-local" class="form-control" id="starttime" name="starttime" required step="3600">
+                <div class="form-text">Select start time in full hours (e.g., 10:00, 11:00).</div>
             </div>
             <div class="mb-3">
-                <label for="endtime" class="form-label">End Time (YYYY-MM-DD HH:MM)</label>
-                <input type="datetime-local" class="form-control" id="endtime" name="endtime" required oninput="validateTimes()">
+                <label for="endtime" class="form-label">End Time (YYYY-MM-DD HH)</label>
+                <input type="datetime-local" class="form-control" id="endtime" name="endtime" required step="3600" oninput="validateTimes()">
+                <div class="form-text">Select end time in full hours (e.g., 10:00, 11:00).</div>
                 <div class="form-text text-danger d-none" id="time-error">End time cannot be earlier than start time.</div>
             </div>
             <div class="mb-3">
@@ -72,3 +74,4 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
 </body>
 </html>
+

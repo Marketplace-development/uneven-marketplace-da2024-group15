@@ -271,9 +271,10 @@ def make_available(parking_spot_id):
         price = request.form.get('price')
 
         try:
-            # Validate times
-            start_datetime = datetime.strptime(starttime, "%Y-%m-%dT%H:%M")
-            end_datetime = datetime.strptime(endtime, "%Y-%m-%dT%H:%M")
+            # Parse the times and force minutes to 00
+            start_datetime = datetime.strptime(starttime, "%Y-%m-%dT%H:%M").replace(minute=0, second=0, microsecond=0)
+            end_datetime = datetime.strptime(endtime, "%Y-%m-%dT%H:%M").replace(minute=0, second=0, microsecond=0)
+
             if end_datetime <= start_datetime:
                 flash("End time must be later than start time.", "danger")
                 return redirect(url_for('main.make_available', parking_spot_id=parking_spot_id))
