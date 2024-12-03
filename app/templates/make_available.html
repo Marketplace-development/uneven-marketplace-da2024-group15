@@ -59,7 +59,7 @@
             </div>
             <div class="mb-3">
                 <label for="price" class="form-label">Price (€ per hour)</label>
-                <input type="number" class="form-control" id="price" name="price" step="0.01" min="0" required placeholder="Enter price in € per hour (e.g., 23.50)">
+                <input type="number" class="form-control" id="price" name="price" step="1" min="0" required placeholder="Enter price in € per hour (e.g., 23.50)">
             </div>
             <button type="submit" class="btn btn-primary" id="submit-button" disabled>Save Availability</button>
             <a href="{{ url_for('main.account') }}" class="btn btn-secondary">Cancel</a>
