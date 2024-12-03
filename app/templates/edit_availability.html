@@ -11,31 +11,16 @@
         <p><strong>Address:</strong> {{ parking_spot.street_address }}, {{ parking_spot.city }}, {{ parking_spot.postal_code }}</p>
         <p><strong>Description:</strong> {{ parking_spot.description }}</p>
 
-        <!-- Flash Messages -->
-        <div class="container mt-4">
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
-        </div>
-
-        <!-- Edit Availability Form -->
         <form method="POST" action="{{ url_for('main.edit_availability', availability_id=availability.id) }}">
             <div class="mb-3">
-                <label for="starttime" class="form-label">Start Time (YYYY-MM-DD HH:MM)</label>
-                <input type="datetime-local" class="form-control" id="starttime" name="starttime" required 
-                       value="{{ availability.starttime.strftime('%Y-%m-%dT%H:%M') }}">
+                <label for="starttime" class="form-label">Start Time (YYYY-MM-DD HH)</label>
+                <input type="datetime-local" class="form-control" id="starttime" name="starttime" required step="3600" 
+                       value="{{ availability.starttime.strftime('%Y-%m-%dT%H:%M') }}" onchange="formatTime(this); validateTimes()">
             </div>
             <div class="mb-3">
-                <label for="endtime" class="form-label">End Time (YYYY-MM-DD HH:MM)</label>
-                <input type="datetime-local" class="form-control" id="endtime" name="endtime" required 
-                       value="{{ availability.endtime.strftime('%Y-%m-%dT%H:%M') }}" oninput="validateTimes()">
+                <label for="endtime" class="form-label">End Time (YYYY-MM-DD HH)</label>
+                <input type="datetime-local" class="form-control" id="endtime" name="endtime" required step="3600" 
+                       value="{{ availability.endtime.strftime('%Y-%m-%dT%H:%M') }}" onchange="formatTime(this); validateTimes()">
                 <div class="form-text text-danger d-none" id="time-error">End time cannot be earlier than start time.</div>
             </div>
             <div class="mb-3">
@@ -43,30 +28,43 @@
                 <input type="number" class="form-control" id="price" name="price" step="0.01" min="0" required
                        value="{{ availability.price }}">
             </div>
-            <button type="submit" class="btn btn-primary" id="submit-button">Save Changes</button>
+            <button type="submit" class="btn btn-primary" id="submit-button" disabled>Save Changes</button>
             <a href="{{ url_for('main.account') }}" class="btn btn-secondary">Cancel</a>
         </form>
     </div>
 
     <script>
-        // Client-side validation for time inputs
+        function formatTime(input) {
+            if (input.value) {
+                const date = new Date(input.value);
+                date.setMinutes(0, 0, 0);
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                const hours = String(date.getHours()).padStart(2, '0');
+                input.value = `${year}-${month}-${day}T${hours}:00`;
+            }
+        }
+
         function validateTimes() {
             const startTime = document.getElementById('starttime').value;
             const endTime = document.getElementById('endtime').value;
             const errorDiv = document.getElementById('time-error');
             const submitButton = document.getElementById('submit-button');
 
-            if (startTime && endTime && new Date(endTime) < new Date(startTime)) {
+            let isValid = true;
+
+            if (endTime && startTime && new Date(endTime) <= new Date(startTime)) {
                 errorDiv.classList.remove('d-none');
-                submitButton.disabled = true;
+                isValid = false;
             } else {
                 errorDiv.classList.add('d-none');
-                submitButton.disabled = false;
             }
+
+            submitButton.disabled = !isValid;
         }
     </script>
 
-    <!-- Include Bootstrap JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
 </body>
 </html>
