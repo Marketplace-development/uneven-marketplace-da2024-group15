@@ -56,7 +56,7 @@ def logout():
 @main.route('/index')
 def index():
     """
-    Dashboard page that displays only available parking spots not owned by the current user.
+    Dashboardpagina die alle parkeerplaatsen toont zonder tijdsfilters.
     """
     if 'username' not in session:
         flash("You need to be logged in to access the dashboard.", "danger")
@@ -65,17 +65,17 @@ def index():
     username = session['username']
     user = User.query.filter_by(username=username).first()
 
-    # Fetch only available parking spots not owned by the current user
+    # Fetch available parking spots not owned by the current user (without time filters)
     active_listings = (
         db.session.query(ParkingSpot, Availability)
         .join(Availability)
         .filter(
-            ParkingSpot.host_id != user.phonenumber,
-            Availability.starttime <= datetime.utcnow(),
-            Availability.endtime > datetime.utcnow()
+            ParkingSpot.host_id != user.phonenumber
         )
         .all()
     )
+
+    print(f"Active listings found: {len(active_listings)}")  # Debug: Print het aantal gevonden listings
 
     return render_template('index.html', username=username, active_listings=active_listings, search_city=None)
 
