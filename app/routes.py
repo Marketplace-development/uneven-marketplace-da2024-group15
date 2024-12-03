@@ -402,9 +402,6 @@ def book_now(parking_spot_id):
 
 @main.route('/booked_parking_spots')
 def view_booked_spots():
-    """
-    Page to view booked parking spots.
-    """
     if 'username' not in session:
         flash("You need to be logged in to view booked parking spots.", "danger")
         return redirect(url_for('main.login'))
@@ -424,6 +421,7 @@ def view_booked_spots():
         user=user, 
         booked_spots=booked_spots
     )
+
 
 @main.route('/add_review/<int:parking_spot_id>', methods=['GET'])
 def add_review(parking_spot_id):
