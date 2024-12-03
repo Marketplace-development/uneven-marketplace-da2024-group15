@@ -1,7 +1,7 @@
 from flask import Blueprint, request, redirect, url_for, render_template, session, flash
 from .models import db, User, Host, Customer, ParkingSpot, Transaction, Review, Availability
 from supabase import create_client
-from datetime import datetime
+from datetime import datetime, timezone
 
 # Blueprint instellen
 main = Blueprint('main', __name__)
@@ -65,12 +65,15 @@ def index():
     username = session['username']
     user = User.query.filter_by(username=username).first()
 
-    # Fetch available parking spots not owned by the current user (without time filters)
+    # Fetch available parking spots not owned by the current user (without time filters),
+    # excluding spots that are already booked.
     active_listings = (
         db.session.query(ParkingSpot, Availability)
         .join(Availability)
+        .outerjoin(Transaction, ParkingSpot.id == Transaction.parkingid)
         .filter(
-            ParkingSpot.host_id != user.phonenumber
+            ParkingSpot.host_id != user.phonenumber,
+            db.or_(Transaction.transaction_id == None, Transaction.status != "Booked")
         )
         .all()
     )
@@ -377,13 +380,9 @@ def book_now(parking_spot_id):
         return redirect(url_for('main.index'))
 
     try:
-        # Remove the availability
-        db.session.delete(availability)
-        db.session.commit()
-
-        # Create a new transaction
+        # Create a new transaction without deleting the availability
         transaction = Transaction(
-            transaction_date=datetime.utcnow(),
+            transaction_date=datetime.now(),
             status="Booked",
             commission_fee=5.00,
             phonec=user.phonenumber,  # Current user's phone number
@@ -400,8 +399,13 @@ def book_now(parking_spot_id):
 
     return redirect(url_for('main.index'))
 
+from datetime import datetime, timezone
+
 @main.route('/booked_parking_spots')
 def view_booked_spots():
+    """
+    Page to view booked parking spots, split into active and expired bookings.
+    """
     if 'username' not in session:
         flash("You need to be logged in to view booked parking spots.", "danger")
         return redirect(url_for('main.login'))
@@ -414,13 +418,34 @@ def view_booked_spots():
         return redirect(url_for('main.index'))
 
     # Fetch booked parking spots for the user
-    booked_spots = db.session.query(Transaction).filter_by(phonec=user.phonenumber).all()
+    current_time = datetime.now(timezone.utc)  # Make current_time timezone-aware
+    booked_spots = (
+        db.session.query(Transaction, Availability)
+        .join(ParkingSpot, ParkingSpot.id == Transaction.parkingid)
+        .join(Availability, Availability.parkingspot_id == ParkingSpot.id)
+        .filter(Transaction.phonec == user.phonenumber, Transaction.status == "Booked")
+        .all()
+    )
+
+    # Split bookings into active and expired
+    active_bookings = []
+    expired_bookings = []
+
+    for booking, availability in booked_spots:
+        # Ensure endtime is also timezone-aware
+        if availability.endtime.replace(tzinfo=timezone.utc) >= current_time:
+            active_bookings.append((booking, availability))
+        else:
+            expired_bookings.append((booking, availability))
 
     return render_template(
-        'booked_spots.html', 
-        user=user, 
-        booked_spots=booked_spots
+        'booked_spots.html',
+        user=user,
+        active_bookings=active_bookings,
+        expired_bookings=expired_bookings
     )
+
+
 
 
 @main.route('/add_review/<int:parking_spot_id>', methods=['GET'])
