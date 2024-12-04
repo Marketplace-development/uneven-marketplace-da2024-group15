@@ -12,7 +12,7 @@
             <!-- Back button -->
             <a href="{{ url_for('main.index') }}" class="btn btn-secondary">Back to Home</a>
         </div>
-        
+
         <!-- Flash messages -->
         <div class="container mt-4">
             {% with messages = get_flashed_messages(with_categories=true) %}
@@ -36,23 +36,29 @@
                 <p><strong>Phone Number:</strong> {{ user.phonenumber }}</p>
             </div>
         </div>
-    
+
         <!-- My Parking Spots -->
         <h3>My Parkingspots</h3>
-        {% if listings %}
+        {% if filtered_listings %}
             <ul class="list-group">
-                {% for listing in listings %}
+                {% for item in filtered_listings %}
                     <li class="list-group-item">
-                        <strong>{{ listing.name }}</strong> <br>
-                        <strong>Address:</strong> {{ listing.street_address }}, {{ listing.city }}, {{ listing.postal_code }} <br>
-                        <p>{{ listing.description }}</p>
-                        <p><strong>Status:</strong> {% if listing.availabilities|length > 0 %}Available{% else %}Not Available{% endif %}</p>
-    
+                        <strong>{{ item.listing.name }}</strong> <br>
+                        <strong>Address:</strong> {{ item.listing.street_address }}, {{ item.listing.city }}, {{ item.listing.postal_code }} <br>
+                        <p>{{ item.listing.description }}</p>
+                        <p><strong>Status:</strong> 
+                            {% if item.availabilities|length > 0 %}
+                                Available
+                            {% else %}
+                                Not Available
+                            {% endif %}
+                        </p>
+
                         <!-- Availabilities -->
-                        {% if listing.availabilities|length > 0 %}
+                        {% if item.availabilities|length > 0 %}
                             <h5>Availability:</h5>
                             <ul class="list-group">
-                                {% for availability in listing.availabilities %}
+                                {% for availability in item.availabilities %}
                                     <li class="list-group-item">
                                         From: {{ availability.starttime.strftime('%Y-%m-%d %H:%M') }} <br>
                                         To: {{ availability.endtime.strftime('%Y-%m-%d %H:%M') }} <br>
@@ -62,20 +68,22 @@
                                 {% endfor %}
                             </ul>
                         {% endif %}
-    
+
                         <!-- Buttons -->
-                        <a href="{{ url_for('main.make_available', parking_spot_id=listing.id) }}" class="btn btn-primary mt-2">Make Available</a>
-                        <a href="{{ url_for('main.view_reviews', parking_spot_id=listing.id) }}" class="btn btn-info mt-2">View Reviews</a>
+                        <a href="{{ url_for('main.make_available', parking_spot_id=item.listing.id) }}" class="btn btn-primary mt-2">Make Available</a>
+                        <a href="{{ url_for('main.view_reviews', parking_spot_id=item.listing.id) }}" class="btn btn-info mt-2">View Reviews</a>
                     </li>
                 {% endfor %}
             </ul>
         {% else %}
             <p>You have no parkingspots at the moment.</p>
         {% endif %}
-    
+
     </div>
 
     <!-- Include Bootstrap JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
 </body>
 </html>
+
+

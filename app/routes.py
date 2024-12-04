@@ -1,7 +1,7 @@
 from flask import Blueprint, request, redirect, url_for, render_template, session, flash
 from .models import db, User, Host, Customer, ParkingSpot, Transaction, Review, Availability
 from supabase import create_client
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 # Blueprint instellen
 main = Blueprint('main', __name__)
@@ -65,12 +65,17 @@ def index():
     username = session['username']
     user = User.query.filter_by(username=username).first()
 
+    # Huidige tijd in UTC
+    current_time = datetime.utcnow()
+
+    # Query naar actieve listings waarbij endtime groter is dan (current_time + 1 uur)
     active_listings = (
         db.session.query(ParkingSpot, Availability)
         .join(Availability)
         .filter(
             ParkingSpot.host_id != user.phonenumber,
-            Availability.is_booked == False  # Alleen niet-geboekte availabilities tonen
+            Availability.is_booked == False,  # Alleen niet-geboekte availabilities
+            (Availability.endtime - timedelta(hours=1)) > current_time  # Endtime - 1 uur > huidige tijd
         )
         .all()
     )
@@ -217,7 +222,7 @@ def add_listing():
 @main.route('/account')
 def account():
     """
-    Account page: Shows user information, owned listings, and booked listings.
+    Account page: Shows user information and owned listings without expired availabilities.
     """
     if 'username' not in session:
         flash("You need to be logged in to view your account.", "danger")
@@ -233,14 +238,25 @@ def account():
     # Listings owned by the user
     listings = ParkingSpot.query.filter_by(host_id=user.phonenumber).all()
 
-    # Booked parking spots for the customer
-    booked_listings = db.session.query(Transaction).filter_by(phonec=user.phonenumber).all()
+    # Huidige tijd in UTC
+    current_time = datetime.utcnow()
+
+    # Filter beschikbaarheden voor weergave zonder SQLAlchemy-objecten te overschrijven
+    filtered_listings = []
+    for listing in listings:
+        filtered_availabilities = [
+            availability for availability in listing.availabilities
+            if (availability.endtime - timedelta(hours=1)) > current_time
+        ]
+        filtered_listings.append({
+            "listing": listing,
+            "availabilities": filtered_availabilities
+        })
 
     return render_template(
-        'account.html', 
-        user=user, 
-        listings=listings, 
-        booked_listings=booked_listings
+        'account.html',
+        user=user,
+        filtered_listings=filtered_listings  # Geoptimaliseerde data voor de template
     )
 
 @main.route('/make_available/<int:parking_spot_id>', methods=['GET', 'POST'])
@@ -393,8 +409,6 @@ def book_now(parking_spot_id):
         flash(f"An error occurred while booking the parking spot: {e}", "danger")
 
     return redirect(url_for('main.index'))
-
-from datetime import timedelta
 
 @main.route('/booked_parking_spots')
 def view_booked_spots():
