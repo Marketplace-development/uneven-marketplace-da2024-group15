@@ -167,9 +167,6 @@ def listings():
 
 @main.route('/add_listing', methods=['GET', 'POST'])
 def add_listing():
-    """
-    Page for adding a new parking spot. Requires login.
-    """
     if 'username' not in session:
         flash("You need to be logged in to add a listing.", "danger")
         return redirect(url_for('main.login'))
@@ -209,7 +206,13 @@ def add_listing():
             db.session.add(new_parking_spot)
             db.session.commit()
 
-            flash("Parking spot successfully added!", "success")
+            # Flash success message with a clickable link to "My Account"
+            flash(
+                'Parking spot successfully added! <a href="{}" class="alert-link">Make your parking spot available at My Account</a>.'.format(
+                    url_for('main.account')
+                ),
+                "success"
+            )
             return redirect(url_for('main.index'))
 
         except Exception as e:
@@ -218,6 +221,7 @@ def add_listing():
             return redirect(url_for('main.add_listing'))
 
     return render_template('add_listing.html')
+
 
 @main.route('/account')
 def account():

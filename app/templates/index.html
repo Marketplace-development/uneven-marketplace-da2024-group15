@@ -25,7 +25,7 @@
     <div class="top-bar d-flex align-items-center">
         <a href="{{ url_for('main.index') }}" class="btn btn-light btn-sm">Home</a>
         <a href="{{ url_for('main.account') }}" class="btn btn-light btn-sm">My Account</a>
-        <a href="{{ url_for('main.add_listing') }}" class="btn btn-light btn-sm">Create a Listing</a>
+        <a href="{{ url_for('main.add_listing') }}" class="btn btn-light btn-sm">Create Parking Spot</a>
         <a href="{{ url_for('main.view_booked_spots') }}" class="btn btn-light btn-sm">View Booked Parking Spots</a>
         <a href="{{ url_for('main.about') }}" class="btn btn-light btn-sm">About Us</a>
         <form action="{{ url_for('main.logout') }}" method="post">
@@ -43,10 +43,11 @@
             {% if messages %}
                 <div class="alert-container">
                     {% for category, message in messages %}
-                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message|safe }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    
                     {% endfor %}
                 </div>
             {% endif %}
