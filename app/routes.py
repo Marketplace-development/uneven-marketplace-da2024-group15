@@ -394,6 +394,8 @@ def book_now(parking_spot_id):
 
     return redirect(url_for('main.index'))
 
+from datetime import timedelta
+
 @main.route('/booked_parking_spots')
 def view_booked_spots():
     """
@@ -406,7 +408,9 @@ def view_booked_spots():
     username = session['username']
     user = User.query.filter_by(username=username).first()
 
+    # Huidige tijd in UTC
     current_time = datetime.utcnow()
+
     booked_spots = (
         db.session.query(Transaction, Availability)
         .join(ParkingSpot, ParkingSpot.id == Transaction.parkingid)
@@ -419,7 +423,13 @@ def view_booked_spots():
     expired_bookings = []
 
     for booking, availability in booked_spots:
-        if availability.endtime >= current_time:
+        # Trek 1 uur af van de endtime
+        adjusted_endtime = availability.endtime - timedelta(hours=1)
+
+        print(f"Current time: {current_time}, Adjusted End time: {adjusted_endtime}")
+
+        # Controleer of de booking actief of verlopen is
+        if adjusted_endtime >= current_time:
             active_bookings.append((booking, availability))
         else:
             expired_bookings.append((booking, availability))
@@ -430,6 +440,7 @@ def view_booked_spots():
         active_bookings=active_bookings,
         expired_bookings=expired_bookings
     )
+
 
 
 @main.route('/add_review/<int:parking_spot_id>', methods=['GET'])
