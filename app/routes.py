@@ -275,11 +275,18 @@ def make_available(parking_spot_id):
         flash("User not found in the database.", "danger")
         return redirect(url_for('main.index'))
 
-
     parking_spot = ParkingSpot.query.get(parking_spot_id)
+
     if not parking_spot or parking_spot.host_id != user.phonenumber:
         flash("Parking spot not found or you do not have permission to modify it.", "danger")
         return redirect(url_for('main.account'))
+
+    # Filter beschikbaarheden die nog niet verlopen zijn
+    current_time = datetime.utcnow()
+    active_availabilities = [
+        availability for availability in parking_spot.availabilities
+        if (availability.endtime - timedelta(hours=1)) > current_time
+    ]
 
     if request.method == 'POST':
         starttime = request.form.get('starttime')
@@ -287,9 +294,9 @@ def make_available(parking_spot_id):
         price = request.form.get('price')
 
         try:
-            # Parse the times and force minutes to 00
-            start_datetime = datetime.strptime(starttime, "%Y-%m-%dT%H:%M").replace(minute=0, second=0, microsecond=0)
-            end_datetime = datetime.strptime(endtime, "%Y-%m-%dT%H:%M").replace(minute=0, second=0, microsecond=0)
+            # Parse de tijden
+            start_datetime = datetime.strptime(starttime, "%Y-%m-%dT%H:%M")
+            end_datetime = datetime.strptime(endtime, "%Y-%m-%dT%H:%M")
 
             if end_datetime <= start_datetime:
                 flash("End time must be later than start time.", "danger")
@@ -298,7 +305,7 @@ def make_available(parking_spot_id):
             flash("Invalid date format. Please use the correct format (YYYY-MM-DD HH:MM).", "danger")
             return redirect(url_for('main.make_available', parking_spot_id=parking_spot_id))
 
-        # Check for overlapping availability
+        # Controleer op overlappende beschikbaarheid
         overlapping = db.session.query(Availability).filter(
             Availability.parkingspot_id == parking_spot_id,
             db.or_(
@@ -312,8 +319,7 @@ def make_available(parking_spot_id):
             flash("This parking spot is already available during this time period.", "danger")
             return redirect(url_for('main.make_available', parking_spot_id=parking_spot_id))
 
-
-        # Add new availability
+        # Voeg nieuwe beschikbaarheid toe
         try:
             availability = Availability(
                 starttime=start_datetime,
@@ -331,7 +337,11 @@ def make_available(parking_spot_id):
             flash(f"An error occurred: {e}", "danger")
             return redirect(url_for('main.make_available', parking_spot_id=parking_spot_id))
 
-    return render_template('make_available.html', parking_spot=parking_spot)
+    return render_template(
+        'make_available.html',
+        parking_spot=parking_spot,
+        availabilities=active_availabilities
+    )
 
 @main.route('/details/<int:parking_spot_id>')
 def view_details(parking_spot_id):

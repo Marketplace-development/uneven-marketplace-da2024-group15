@@ -30,12 +30,12 @@
         <!-- Current Availability -->
         <div class="mb-4">
             <h3>Current Availability</h3>
-            {% if parking_spot.availabilities %}
+            {% if availabilities %}
                 <ul class="list-group">
-                    {% for availability in parking_spot.availabilities %}
+                    {% for availability in availabilities %}
                         <li class="list-group-item">
-                            From: {{ availability.starttime.strftime('%Y-%m-%d %H:00') }} <br>
-                            To: {{ availability.endtime.strftime('%Y-%m-%d %H:00') }} <br>
+                            From: {{ availability.starttime.strftime('%Y-%m-%d %H:%M') }} <br>
+                            To: {{ availability.endtime.strftime('%Y-%m-%d %H:%M') }} <br>
                             Price: €{{ availability.price }} per hour
                         </li>
                     {% endfor %}
