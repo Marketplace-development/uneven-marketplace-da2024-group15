@@ -1,5 +1,4 @@
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
 
 db = SQLAlchemy()
 
@@ -9,7 +8,7 @@ class User(db.Model):
     username = db.Column(db.String, unique=True, nullable=False)  
     phonenumber = db.Column(db.BigInteger, primary_key=True)  
     email = db.Column(db.Text, unique=True, nullable=False)
-    registration_date = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)  
+    registration_date = db.Column(db.TIMESTAMP, server_default=db.func.now(), nullable=False)  
 
 class Host(db.Model):
     __tablename__ = 'host'
@@ -29,7 +28,7 @@ class ParkingSpot(db.Model):
     __tablename__ = 'parking_spots'
     id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)  
     name = db.Column(db.Text, nullable=False) 
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)  
+    created_at = db.Column(db.TIMESTAMP, server_default=db.func.now(), nullable=False)  
     description = db.Column(db.Text, nullable=True) 
     street_address = db.Column(db.Text, nullable=False)
     postal_code = db.Column(db.BigInteger, nullable=False)
@@ -42,10 +41,11 @@ class ParkingSpot(db.Model):
 class Availability(db.Model):
     __tablename__ = 'availability'
     id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)  
-    starttime = db.Column(db.DateTime, nullable=False)  
-    endtime = db.Column(db.DateTime, nullable=False)  
+    starttime = db.Column(db.TIMESTAMP, nullable=False)  
+    endtime = db.Column(db.TIMESTAMP, nullable=False)  
     parkingspot_id = db.Column(db.BigInteger, db.ForeignKey('parking_spots.id'), nullable=False)  
     price = db.Column(db.Numeric, nullable=False)  
+    is_booked = db.Column(db.Boolean, nullable=False, default=False)
 
     parking_spot = db.relationship('ParkingSpot', backref=db.backref('availabilities', lazy=True))
 
@@ -53,7 +53,7 @@ class Availability(db.Model):
 class Transaction(db.Model):
     __tablename__ = 'transaction'
     transaction_id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)  
-    transaction_date = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)  
+    transaction_date = db.Column(db.TIMESTAMP, server_default=db.func.now(), nullable=False)  
     status = db.Column(db.Text, nullable=False)  
     commission_fee = db.Column(db.Numeric, nullable=False, default=5)  
     phonec = db.Column(db.BigInteger, db.ForeignKey('customer.phonenumber'), nullable=False)  
@@ -69,18 +69,18 @@ class Review(db.Model):
     __tablename__ = 'review'
     id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)  
     parking_spot_id = db.Column(db.BigInteger, db.ForeignKey('parking_spots.id'), nullable=False)  
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)  
+    created_at = db.Column(db.TIMESTAMP, server_default=db.func.now(), nullable=False)  
     customer_id = db.Column(db.BigInteger, db.ForeignKey('customer.phonenumber'), nullable=False) 
     rating = db.Column(db.Integer, nullable=False)  
     comment = db.Column(db.Text, nullable=True)  
+    id_from_transaction = db.Column(db.BigInteger, db.ForeignKey('transaction.transaction_id'), nullable=False)
 
     customer = db.relationship('Customer', backref=db.backref('reviews', lazy=True))
     parking_spot = db.relationship('ParkingSpot', backref=db.backref('reviews', lazy=True))
+    transaction = db.relationship('Transaction', backref=db.backref('reviews', lazy=True))
 
 # Alembic Version Model
 class AlembicVersion(db.Model):
     __tablename__ = 'alembic_version'
     version_num = db.Column(db.String, primary_key=True)
-
-
     
