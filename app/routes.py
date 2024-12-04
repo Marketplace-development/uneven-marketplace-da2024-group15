@@ -576,43 +576,56 @@ def view_reviews(parking_spot_id):
 
 @main.route('/search_listings', methods=['GET'])
 def search_listings():
-    """
-    Search for available parking spots based on city with the same filtering logic as the index page.
-    """
     if 'username' not in session:
         flash("You need to be logged in to search listings.", "danger")
         return redirect(url_for('main.login'))
 
-    city = request.args.get('city', '').strip().lower()
+    search_type = request.args.get('search_type', 'city')
+    search_query = request.args.get('search_query', '').strip().lower()
 
-    if not city:
-        flash("Please enter a valid city to search.", "danger")
+    if not search_query:
+        flash("Please enter a valid search query.", "danger")
         return redirect(url_for('main.index'))
 
-    username = session['username']
-    user = User.query.filter_by(username=username).first()
-
-    # Current time in UTC
     current_time = datetime.utcnow()
 
-    # Query to fetch listings in the specified city
-    matching_listings = (
-        db.session.query(ParkingSpot, Availability)
-        .join(Availability)
-        .filter(
-            db.func.lower(ParkingSpot.city) == city,  # Match city
-            ParkingSpot.host_id != user.phonenumber,  # Exclude user's own listings
-            Availability.is_booked == False,  # Availability must not be booked
-            (Availability.endtime - timedelta(hours=1)) > current_time  # End time - 1 hour > current time
+    if search_type == 'city':
+        # Zoek op stad
+        matching_listings = (
+            db.session.query(ParkingSpot, Availability)
+            .join(Availability)
+            .filter(
+                db.func.lower(ParkingSpot.city) == search_query,
+                Availability.is_booked == False,
+                (Availability.endtime - timedelta(hours=1)) > current_time
+            )
+            .all()
         )
-        .all()
-    )
+    elif search_type == 'user':
+        # Zoek op user en alleen actieve/available listings
+        user = User.query.filter(db.func.lower(User.username) == search_query).first()
+        if not user:
+            flash(f"No user found with username '{search_query}'.", "warning")
+            return redirect(url_for('main.index'))
+
+        matching_listings = (
+            db.session.query(ParkingSpot, Availability)
+            .join(Availability)
+            .filter(
+                ParkingSpot.host_id == user.phonenumber,
+                Availability.is_booked == False,
+                (Availability.endtime - timedelta(hours=1)) > current_time
+            )
+            .all()
+        )
+    else:
+        matching_listings = []
 
     return render_template(
         'index.html',
-        username=username,
+        username=session.get('username'),
         active_listings=matching_listings,
-        search_city=city
+        search_city=search_query if search_type == 'city' else None
     )
 
 @main.route('/about')
