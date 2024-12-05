@@ -58,11 +58,13 @@ class Transaction(db.Model):
     commission_fee = db.Column(db.Numeric, nullable=False, default=5)  
     phonec = db.Column(db.BigInteger, db.ForeignKey('customer.phonenumber'), nullable=False)  
     phoneh = db.Column(db.BigInteger, db.ForeignKey('host.phonenumber'), nullable=False)  
-    parkingid = db.Column(db.BigInteger, db.ForeignKey('parking_spots.id'), nullable=False)  
+    parkingid = db.Column(db.BigInteger, db.ForeignKey('parking_spots.id'), nullable=False)
+    availability_id = db.Column(db.BigInteger, db.ForeignKey('availability.id'), nullable=False)  
    
     customer = db.relationship('Customer', backref=db.backref('transactions', lazy=True))
     host = db.relationship('Host', backref=db.backref('transactions', lazy=True))
     parking_spot = db.relationship('ParkingSpot', backref=db.backref('transactions', lazy=True))
+    availability = db.relationship('Availability', backref=db.backref('transactions', lazy=True))
 
 # Review Model
 class Review(db.Model):

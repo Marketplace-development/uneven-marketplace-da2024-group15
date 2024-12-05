@@ -411,14 +411,15 @@ def book_now(parking_spot_id):
         # Markeer beschikbaarheid als geboekt
         availability.is_booked = True
 
-        # Maak een nieuwe transactie
+        # Maak een nieuwe transactie met de availability_id
         transaction = Transaction(
             transaction_date=datetime.utcnow(),
             status="Booked",
             commission_fee=5.00,
             phonec=user.phonenumber,
             phoneh=parking_spot.host_id,
-            parkingid=parking_spot.id  # We gebruiken alleen parking_spot hier
+            parkingid=parking_spot.id,
+            availability_id=availability.id
         )
         db.session.add(transaction)
         db.session.commit()
@@ -432,9 +433,6 @@ def book_now(parking_spot_id):
 
 @main.route('/booked_parking_spots')
 def view_booked_spots():
-    """
-    Pagina om geboekte parkeerplaatsen te bekijken, opgesplitst in actief en verlopen.
-    """
     if 'username' not in session:
         flash("You need to be logged in to view booked parking spots.", "danger")
         return redirect(url_for('main.login'))
@@ -442,13 +440,11 @@ def view_booked_spots():
     username = session['username']
     user = User.query.filter_by(username=username).first()
 
-    # Huidige tijd in UTC
     current_time = datetime.utcnow()
 
     booked_spots = (
         db.session.query(Transaction, Availability)
-        .join(ParkingSpot, ParkingSpot.id == Transaction.parkingid)
-        .join(Availability, Availability.parkingspot_id == ParkingSpot.id)
+        .join(Availability, Availability.id == Transaction.availability_id)  # Koppel specifiek de geboekte beschikbaarheid
         .filter(
             Transaction.phonec == user.phonenumber,  # Alleen de gebruiker die is ingelogd
             Availability.is_booked == True           # Alleen geboekte beschikbaarheden
@@ -456,11 +452,9 @@ def view_booked_spots():
         .all()
     )
 
-    # Splits actieve en verlopen boekingen
     active_bookings = []
     expired_bookings = []
 
-    current_time = datetime.utcnow()
     for booking, availability in booked_spots:
         if availability.endtime >= current_time:  # Actieve boekingen
             active_bookings.append((booking, availability))
@@ -473,8 +467,6 @@ def view_booked_spots():
         active_bookings=active_bookings,
         expired_bookings=expired_bookings
     )
-
-
 
 @main.route('/add_review/<int:parking_spot_id>', methods=['GET'])
 def add_review(parking_spot_id):
