@@ -20,6 +20,7 @@
                 <label for="comment" class="form-label">Comment</label>
                 <textarea class="form-control" id="comment" name="comment" rows="4"></textarea>
             </div>
+            <input type="hidden" name="transaction_id" value="{{ transaction.transaction_id }}">
             <button type="submit" class="btn btn-primary">Submit Review</button>
             <a href="{{ url_for('main.view_booked_spots') }}" class="btn btn-secondary">Cancel</a>
         </form>

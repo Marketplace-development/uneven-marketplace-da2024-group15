@@ -24,11 +24,12 @@
             <h2>Customer Reviews</h2>
             {% if reviews %}
                 <ul class="list-group">
-                    {% for review in reviews %}
+                    {% for review, transaction in reviews %}
                         <li class="list-group-item">
                             <p><strong>Rating:</strong> {{ review.rating }} / 5</p>
                             <p>{{ review.comment }}</p>
                             <p><small class="text-muted">Reviewed on {{ review.created_at.strftime('%Y-%m-%d %H:%M') }}</small></p>
+                            <p><small>Transaction ID: {{ transaction.transaction_id }}</small></p>
                         </li>
                     {% endfor %}
                 </ul>

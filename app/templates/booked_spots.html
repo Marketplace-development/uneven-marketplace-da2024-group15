@@ -24,7 +24,6 @@
         <h1>Booked Parking Spots</h1>
         <a href="{{ url_for('main.index') }}" class="btn btn-secondary mb-3">Back to Home</a>
 
-
         <!-- Active Bookings -->
         <h2>Active Bookings</h2>
         {% if active_bookings %}
@@ -37,7 +36,14 @@
                         <p><strong>Booking Date:</strong> {{ booking.transaction_date.strftime('%Y-%m-%d %H:%M') }}</p>
                         <p><strong>Start Time:</strong> {{ availability.starttime.strftime('%Y-%m-%d %H:%M') }}</p>
                         <p><strong>End Time:</strong> {{ availability.endtime.strftime('%Y-%m-%d %H:%M') }}</p>
-                        <!-- Geen reviewknop bij Active Bookings -->
+                        
+                        <!-- Review logic -->
+                        {% set reviews_for_transaction = booking.parking_spot.reviews | selectattr('id_from_transaction', 'equalto', booking.transaction_id) | list %}
+                        {% if reviews_for_transaction|length == 0 %}
+                            <a href="{{ url_for('main.add_review', parking_spot_id=booking.parking_spot.id) }}" class="btn btn-primary mt-2">Leave a Review</a>
+                        {% else %}
+                            <p class="text-success mt-2">Review already submitted</p>
+                        {% endif %}
                     </li>
                 {% endfor %}
             </ul>
@@ -57,7 +63,10 @@
                         <p><strong>Booking Date:</strong> {{ booking.transaction_date.strftime('%Y-%m-%d %H:%M') }}</p>
                         <p><strong>Start Time:</strong> {{ availability.starttime.strftime('%Y-%m-%d %H:%M') }}</p>
                         <p><strong>End Time:</strong> {{ availability.endtime.strftime('%Y-%m-%d %H:%M') }}</p>
-                        {% if not booking.parking_spot.reviews %}
+                        
+                        <!-- Review logic -->
+                        {% set reviews_for_transaction = booking.parking_spot.reviews | selectattr('id_from_transaction', 'equalto', booking.transaction_id) | list %}
+                        {% if reviews_for_transaction|length == 0 %}
                             <a href="{{ url_for('main.add_review', parking_spot_id=booking.parking_spot.id) }}" class="btn btn-primary mt-2">Leave a Review</a>
                         {% else %}
                             <p class="text-success mt-2">Review already submitted</p>
@@ -74,7 +83,3 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
 </body>
 </html>
-
-
-
-

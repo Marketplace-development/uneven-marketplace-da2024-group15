@@ -350,30 +350,35 @@ def make_available(parking_spot_id):
 @main.route('/details/<int:parking_spot_id>')
 def view_details(parking_spot_id):
     """
-    Route to view details of a specific parking spot, including reviews.
+    Route to view details of a specific parking spot, including reviews and availability.
     """
-    # Fetch the parking spot and its availability
-    parking_spot = db.session.query(ParkingSpot, Availability).join(Availability).filter(ParkingSpot.id == parking_spot_id).first()
+    # Haal de parkeerplaats op
+    parking_spot = ParkingSpot.query.get(parking_spot_id)
 
     if not parking_spot:
-        flash("Parking spot not found or no availability available.", "danger")
+        flash("Parking spot not found.", "danger")
         return redirect(url_for('main.index'))
 
-    # Fetch reviews for the parking spot
-    reviews = Review.query.filter_by(parking_spot_id=parking_spot_id).all()
+    # Haal beschikbaarheid op (optioneel de laatste actieve beschikbaarheid)
+    availability = Availability.query.filter(
+        Availability.parkingspot_id == parking_spot_id,
+        Availability.is_booked == False
+    ).order_by(Availability.starttime.asc()).first()
+
+    # Haal reviews op inclusief hun transacties
+    reviews = db.session.query(Review, Transaction).join(Transaction).filter(
+        Review.parking_spot_id == parking_spot_id
+    ).all()
 
     return render_template(
         'details.html',
-        parking_spot=parking_spot[0],
-        availability=parking_spot[1],
+        parking_spot=parking_spot,
+        availability=availability,
         reviews=reviews
     )
 
 @main.route('/book/<int:parking_spot_id>', methods=['POST'])
 def book_now(parking_spot_id):
-    """
-    Route om een parkeerplaats te boeken. Availability wordt gemarkeerd als geboekt.
-    """
     if 'username' not in session:
         flash("You need to be logged in to book a parking spot.", "danger")
         return redirect(url_for('main.login'))
@@ -387,23 +392,24 @@ def book_now(parking_spot_id):
 
     customer = Customer.query.filter_by(phonenumber=user.phonenumber).first()
     if not customer:
-        # Voeg de gebruiker toe aan de Customer-tabel
         customer = Customer(phonenumber=user.phonenumber)
         db.session.add(customer)
         db.session.commit()
 
-    # Fetch de parking spot en beschikbaarheid
+    # Haal de parkeerplek en beschikbaarheid op
     parking_spot = ParkingSpot.query.get(parking_spot_id)
-    availability = Availability.query.filter_by(parkingspot_id=parking_spot_id, is_booked=False).first()
+    availability = Availability.query.filter_by(
+        parkingspot_id=parking_spot_id,
+        is_booked=False  # Alleen niet-geboekte beschikbaarheid
+    ).first()
 
     if not parking_spot or not availability:
         flash("Parking spot not found or no availability available.", "danger")
         return redirect(url_for('main.index'))
 
     try:
-        # Update de availability om deze als geboekt te markeren
+        # Markeer beschikbaarheid als geboekt
         availability.is_booked = True
-        db.session.commit()
 
         # Maak een nieuwe transactie
         transaction = Transaction(
@@ -412,7 +418,7 @@ def book_now(parking_spot_id):
             commission_fee=5.00,
             phonec=user.phonenumber,
             phoneh=parking_spot.host_id,
-            parkingid=parking_spot.id
+            parkingid=parking_spot.id  # We gebruiken alleen parking_spot hier
         )
         db.session.add(transaction)
         db.session.commit()
@@ -443,23 +449,22 @@ def view_booked_spots():
         db.session.query(Transaction, Availability)
         .join(ParkingSpot, ParkingSpot.id == Transaction.parkingid)
         .join(Availability, Availability.parkingspot_id == ParkingSpot.id)
-        .filter(Transaction.phonec == user.phonenumber, Availability.is_booked == True)
+        .filter(
+            Transaction.phonec == user.phonenumber,  # Alleen de gebruiker die is ingelogd
+            Availability.is_booked == True           # Alleen geboekte beschikbaarheden
+        )
         .all()
     )
 
+    # Splits actieve en verlopen boekingen
     active_bookings = []
     expired_bookings = []
 
+    current_time = datetime.utcnow()
     for booking, availability in booked_spots:
-        # Trek 1 uur af van de endtime
-        adjusted_endtime = availability.endtime - timedelta(hours=1)
-
-        print(f"Current time: {current_time}, Adjusted End time: {adjusted_endtime}")
-
-        # Controleer of de booking actief of verlopen is
-        if adjusted_endtime >= current_time:
+        if availability.endtime >= current_time:  # Actieve boekingen
             active_bookings.append((booking, availability))
-        else:
+        else:  # Verlopen boekingen
             expired_bookings.append((booking, availability))
 
     return render_template(
@@ -508,7 +513,7 @@ def add_review(parking_spot_id):
 @main.route('/submit_review/<int:parking_spot_id>', methods=['POST'])
 def submit_review(parking_spot_id):
     """
-    Route to handle the submission of a review for a parking spot.
+    Verwerkt het indienen van een review voor een parkeerplek.
     """
     if 'username' not in session:
         flash("You need to be logged in to leave a review.", "danger")
@@ -535,11 +540,22 @@ def submit_review(parking_spot_id):
         flash("Parking spot not found.", "danger")
         return redirect(url_for('main.view_booked_spots'))
 
+    # Controleer of er een geldige transactie bestaat
+    transaction = Transaction.query.filter_by(
+        phonec=user.phonenumber,
+        parkingid=parking_spot_id
+    ).order_by(Transaction.transaction_date.desc()).first()
+
+    if not transaction:
+        flash("You cannot leave a review for a parking spot you haven't booked.", "danger")
+        return redirect(url_for('main.view_booked_spots'))
+
     try:
         # Voeg de review toe aan de database
         review = Review(
             parking_spot_id=parking_spot_id,
             customer_id=user.phonenumber,
+            id_from_transaction=transaction.transaction_id,
             rating=int(rating),
             comment=comment,
             created_at=datetime.utcnow()
@@ -558,21 +574,21 @@ def submit_review(parking_spot_id):
 @main.route('/view_reviews/<int:parking_spot_id>')
 def view_reviews(parking_spot_id):
     """
-    Route to view reviews for a specific parking spot.
+    Bekijk alle reviews voor een specifieke parkeerplek.
     """
-    if 'username' not in session:
-        flash("You need to be logged in to view reviews.", "danger")
-        return redirect(url_for('main.login'))
-
     parking_spot = ParkingSpot.query.get(parking_spot_id)
 
     if not parking_spot:
         flash("Parking spot not found.", "danger")
-        return redirect(url_for('main.account'))
+        return redirect(url_for('main.index'))
 
-    reviews = Review.query.filter_by(parking_spot_id=parking_spot_id).all()
+    # Fetch reviews, inclusief details over de transacties
+    reviews = db.session.query(Review, Transaction).join(Transaction).filter(
+        Review.parking_spot_id == parking_spot_id
+    ).all()
 
     return render_template('view_reviews.html', parking_spot=parking_spot, reviews=reviews)
+
 
 @main.route('/search_listings', methods=['GET'])
 def search_listings():
