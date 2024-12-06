@@ -347,10 +347,10 @@ def make_available(parking_spot_id):
         availabilities=active_availabilities
     )
 
-@main.route('/details/<int:parking_spot_id>')
-def view_details(parking_spot_id):
+@main.route('/details/<int:parking_spot_id>/<int:availability_id>')
+def view_details(parking_spot_id, availability_id):
     """
-    Route to view details of a specific parking spot, including reviews and availability.
+    Route om details van een specifieke parkeerplek te tonen met correcte beschikbaarheid.
     """
     # Haal de parkeerplaats op
     parking_spot = ParkingSpot.query.get(parking_spot_id)
@@ -359,13 +359,17 @@ def view_details(parking_spot_id):
         flash("Parking spot not found.", "danger")
         return redirect(url_for('main.index'))
 
-    # Haal beschikbaarheid op (optioneel de laatste actieve beschikbaarheid)
-    availability = Availability.query.filter(
-        Availability.parkingspot_id == parking_spot_id,
-        Availability.is_booked == False
-    ).order_by(Availability.starttime.asc()).first()
+    # Haal de specifieke beschikbaarheid op
+    availability = Availability.query.filter_by(
+        id=availability_id,
+        parkingspot_id=parking_spot_id
+    ).first()
 
-    # Haal reviews op inclusief hun transacties
+    if not availability:
+        flash("The selected availability is no longer valid.", "warning")
+        return redirect(url_for('main.index'))
+
+    # Haal reviews op
     reviews = db.session.query(Review, Transaction).join(Transaction).filter(
         Review.parking_spot_id == parking_spot_id
     ).all()
@@ -377,8 +381,15 @@ def view_details(parking_spot_id):
         reviews=reviews
     )
 
+
+
+
+
 @main.route('/book/<int:parking_spot_id>', methods=['POST'])
 def book_now(parking_spot_id):
+    """
+    Book a parking spot for a custom time range.
+    """
     if 'username' not in session:
         flash("You need to be logged in to book a parking spot.", "danger")
         return redirect(url_for('main.login'))
@@ -396,11 +407,15 @@ def book_now(parking_spot_id):
         db.session.add(customer)
         db.session.commit()
 
-    # Haal de parkeerplek en beschikbaarheid op
+    # Fetch parking spot and availability
     parking_spot = ParkingSpot.query.get(parking_spot_id)
+    availability_id = request.form.get('availability_id')
+    start_time = request.form.get('start_time')
+    end_time = request.form.get('end_time')
+
     availability = Availability.query.filter_by(
-        parkingspot_id=parking_spot_id,
-        is_booked=False  # Alleen niet-geboekte beschikbaarheid
+        id=availability_id,
+        is_booked=False
     ).first()
 
     if not parking_spot or not availability:
@@ -408,10 +423,38 @@ def book_now(parking_spot_id):
         return redirect(url_for('main.index'))
 
     try:
-        # Markeer beschikbaarheid als geboekt
+        start_datetime = datetime.strptime(start_time, '%Y-%m-%dT%H:%M')
+        end_datetime = datetime.strptime(end_time, '%Y-%m-%dT%H:%M')
+
+        if start_datetime < availability.starttime or end_datetime > availability.endtime:
+            flash("Booking time range must be within the availability window.", "danger")
+            return redirect(url_for('main.view_details', parking_spot_id=parking_spot_id))
+
+        # Create two new availabilities for the split times
+        if start_datetime > availability.starttime:
+            new_availability_start = Availability(
+                starttime=availability.starttime,
+                endtime=start_datetime,
+                parkingspot_id=availability.parkingspot_id,
+                price=availability.price
+            )
+            db.session.add(new_availability_start)
+
+        if end_datetime < availability.endtime:
+            new_availability_end = Availability(
+                starttime=end_datetime,
+                endtime=availability.endtime,
+                parkingspot_id=availability.parkingspot_id,
+                price=availability.price
+            )
+            db.session.add(new_availability_end)
+
+        # Update original availability to booked status
+        availability.starttime = start_datetime
+        availability.endtime = end_datetime
         availability.is_booked = True
 
-        # Maak een nieuwe transactie met de availability_id
+        # Create a transaction
         transaction = Transaction(
             transaction_date=datetime.utcnow(),
             status="Booked",
@@ -430,6 +473,7 @@ def book_now(parking_spot_id):
         flash(f"An error occurred while booking the parking spot: {e}", "danger")
 
     return redirect(url_for('main.index'))
+
 
 @main.route('/booked_parking_spots')
 def view_booked_spots():

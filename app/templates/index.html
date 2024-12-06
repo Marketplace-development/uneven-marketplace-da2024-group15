@@ -7,7 +7,7 @@
     <title>Dashboard</title>
     <style>
         .top-bar {
-            background-color: #285da7;
+            background-color: #85b7fd;
             color: white;
             padding: 10px 20px;
         }
@@ -72,7 +72,8 @@
                             <p><strong>Available From:</strong> {{ availability.starttime.strftime('%Y-%m-%d %H:%M') }}</p>
                             <p><strong>To:</strong> {{ availability.endtime.strftime('%Y-%m-%d %H:%M') }}</p>
                             <p><small class="text-muted">{{ parking_spot.description }}</small></p>
-                            <a href="{{ url_for('main.view_details', parking_spot_id=parking_spot.id) }}" class="btn btn-primary">View Details</a>
+                            <a href="{{ url_for('main.view_details', parking_spot_id=parking_spot.id, availability_id=availability.id) }}" class="btn btn-primary">View Details</a>
+
                         </div>
                     </div>
                 {% else %}

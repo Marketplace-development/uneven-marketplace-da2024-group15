@@ -4,19 +4,76 @@
     <meta charset="UTF-8">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
     <title>Parking Spot Details</title>
+    <script>
+        function calculateTotalPrice() {
+            const pricePerHour = parseFloat(document.getElementById("pricePerHour").value);
+            const startTimeInput = document.getElementById("start_time");
+            const endTimeInput = document.getElementById("end_time");
+            const startTime = new Date(startTimeInput.value);
+            const endTime = new Date(endTimeInput.value);
+
+            const errorElement = document.getElementById("errorMessage");
+            const totalPriceElement = document.getElementById("totalPrice");
+
+            // Clear previous error and total price
+            errorElement.textContent = "";
+            totalPriceElement.textContent = "";
+
+            if (!startTimeInput.value || !endTimeInput.value) {
+                errorElement.textContent = "Both start time and end time are required.";
+                return;
+            }
+
+            if (startTime >= endTime) {
+                errorElement.textContent = "End time must be after start time.";
+                return;
+            }
+
+            const availabilityStart = new Date(document.getElementById("availabilityStart").value);
+            const availabilityEnd = new Date(document.getElementById("availabilityEnd").value);
+
+            if (startTime < availabilityStart || endTime > availabilityEnd) {
+                errorElement.textContent = `Booking must be within available time: 
+                    ${availabilityStart.toLocaleString()} to ${availabilityEnd.toLocaleString()}`;
+                return;
+            }
+
+            const hoursBooked = (endTime - startTime) / (1000 * 60 * 60);
+            const totalPrice = (hoursBooked * pricePerHour).toFixed(2);
+            totalPriceElement.textContent = `Total Price: €${totalPrice}`;
+        }
+    </script>
 </head>
 <body>
     <div class="container mt-5">
         <h1>{{ parking_spot.name }}</h1>
         <p><strong>Address:</strong> {{ parking_spot.street_address }}, {{ parking_spot.city }}, {{ parking_spot.postal_code }}</p>
         <p><strong>Description:</strong> {{ parking_spot.description }}</p>
-        <p><strong>Price:</strong> €{{ availability.price }}</p>
+        <p><strong>Price:</strong> €<span id="pricePerHourDisplay">{{ availability.price }}</span> per hour</p>
         <p><strong>Available From:</strong> {{ availability.starttime.strftime('%Y-%m-%d %H:%M') }}</p>
         <p><strong>To:</strong> {{ availability.endtime.strftime('%Y-%m-%d %H:%M') }}</p>
 
-        <form method="POST" action="{{ url_for('main.book_now', parking_spot_id=parking_spot.id) }}">
-            <button type="submit" class="btn btn-success">Book Now</button>
+        <!-- Hidden inputs for JavaScript -->
+        <input type="hidden" id="pricePerHour" value="{{ availability.price }}">
+        <input type="hidden" id="availabilityStart" value="{{ availability.starttime.strftime('%Y-%m-%dT%H:%M') }}">
+        <input type="hidden" id="availabilityEnd" value="{{ availability.endtime.strftime('%Y-%m-%dT%H:%M') }}">
+
+        <!-- Booking Form -->
+        <form method="POST" action="{{ url_for('main.book_now', parking_spot_id=parking_spot.id) }}" class="mt-3">
+            <input type="hidden" name="availability_id" value="{{ availability.id }}">
+            <div class="form-group">
+                <label for="start_time">Start Time:</label>
+                <input type="datetime-local" id="start_time" name="start_time" class="form-control" required onchange="calculateTotalPrice()">
+            </div>
+            <div class="form-group mt-2">
+                <label for="end_time">End Time:</label>
+                <input type="datetime-local" id="end_time" name="end_time" class="form-control" required onchange="calculateTotalPrice()">
+            </div>
+            <div id="errorMessage" class="text-danger mt-2"></div>
+            <div id="totalPrice" class="mt-2 text-success"></div>
+            <button type="submit" class="btn btn-success mt-3">Book Now</button>
         </form>
+
         <a href="{{ url_for('main.index') }}" class="btn btn-secondary mt-3">Back to Home</a>
 
         <!-- Reviews Section -->
@@ -40,3 +97,4 @@
     </div>
 </body>
 </html>
+
