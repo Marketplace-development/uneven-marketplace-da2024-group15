@@ -3,6 +3,7 @@
     color: #58917A;
     font-weight: bold;
     text-align: center;
+    margin-top: 50px;
 }
 
 /* Kaderstijl */
@@ -16,29 +17,24 @@
 
 /* Back to Home knop */
 .back-home-btn {
-    position: absolute;
-    top: 10px;
-    left: 10px;
     background-color: #58917A;
     color: white;
-    border-radius: 4px;
+    border-radius: 6px;
+    font-size: 1.2rem;
 }
 
-/* Stijl voor het totaalprijs-element */
-#totalPrice {
-    font-weight: bold;
-    color: #28a745; /* Groen */
-}
-
-/* Stijl voor reviews */
-.reviews-title {
-    color: #58917A;
-}
-
-.review-item {
-    border-left: 4px solid #58917A;
-    padding: 10px;
-    margin-bottom: 10px;
-    border-radius: 4px;
-    background-color: #FFF;
+/* Mobiele optimalisatie */
+@media (max-width: 768px) {
+    .parking-title {
+        font-size: 1.8rem;
+    }
+    .back-home-btn {
+        margin-bottom: 20px;
+    }
+    .parking-info-box, .booking-box, .reviews-box {
+        padding: 20px;
+    }
+    .btn {
+        font-size: 1.2rem;
+    }
 }

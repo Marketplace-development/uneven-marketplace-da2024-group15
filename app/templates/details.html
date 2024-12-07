@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
     <link rel="stylesheet" href="styles/details.css">
     <title>Parking Spot Details</title>
@@ -48,59 +49,77 @@
 <body>
     <div class="container mt-5">
         <!-- Back to Home knop -->
-        <a href="{{ url_for('main.index') }}" class="btn btn-secondary back-home-btn">Back to Home</a>
+        <div class="row">
+            <div class="col-12">
+                <a href="{{ url_for('main.index') }}" class="btn btn-secondary back-home-btn w-100 mb-3 py-3 fs-5">Back to Home</a>
+            </div>
+        </div>
 
         <!-- Titel van de Parking Spot -->
-        <h1 class="parking-title">{{ parking_spot.name }}</h1>
-
-        <!-- Eerste kader: Informatie over parking -->
-        <div class="parking-info-box border p-3 mt-4">
-            <p><strong>Address:</strong> {{ parking_spot.street_address }}, {{ parking_spot.city }}, {{ parking_spot.postal_code }}</p>
-            <p><strong>Description:</strong> {{ parking_spot.description }}</p>
-            <p><strong>Price (per hour):</strong> €<span id="pricePerHourDisplay">{{ availability.price }}</span> per hour</p>
-            <p><strong>Available From:</strong> {{ availability.starttime.strftime('%Y-%m-%d %H:%M') }}</p>
-            <p><strong>To:</strong> {{ availability.endtime.strftime('%Y-%m-%d %H:%M') }}</p>
+        <div class="row">
+            <div class="col-12">
+                <h1 class="parking-title text-center fs-2">{{ parking_spot.name }}</h1>
+            </div>
         </div>
 
-        <!-- Tweede kader: Input form -->
-        <div class="booking-box border p-3 mt-4">
-            <form method="POST" action="{{ url_for('main.book_now', parking_spot_id=parking_spot.id) }}">
-                <input type="hidden" name="availability_id" value="{{ availability.id }}">
-                <input type="hidden" id="pricePerHour" value="{{ availability.price }}">
-                <input type="hidden" id="availabilityStart" value="{{ availability.starttime.strftime('%Y-%m-%dT%H:%M') }}">
-                <input type="hidden" id="availabilityEnd" value="{{ availability.endtime.strftime('%Y-%m-%dT%H:%M') }}">
-
-                <div class="form-group">
-                    <label for="start_time">Start Time:</label>
-                    <input type="datetime-local" id="start_time" name="start_time" class="form-control" required onchange="calculateTotalPrice()">
+        <!-- Informatie kader -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="parking-info-box border p-4">
+                    <p><strong>Address:</strong> {{ parking_spot.street_address }}, {{ parking_spot.city }}, {{ parking_spot.postal_code }}</p>
+                    <p><strong>Description:</strong> {{ parking_spot.description }}</p>
+                    <p><strong>Price (per hour):</strong> €<span id="pricePerHourDisplay">{{ availability.price }}</span></p>
+                    <p><strong>Available From:</strong> {{ availability.starttime.strftime('%Y-%m-%d %H:%M') }}</p>
+                    <p><strong>To:</strong> {{ availability.endtime.strftime('%Y-%m-%d %H:%M') }}</p>
                 </div>
-                <div class="form-group mt-2">
-                    <label for="end_time">End Time:</label>
-                    <input type="datetime-local" id="end_time" name="end_time" class="form-control" required onchange="calculateTotalPrice()">
-                </div>
-                <div id="errorMessage" class="text-danger mt-2"></div>
-                <div id="totalPrice" class="mt-2 text-success"></div>
-                <button type="submit" class="btn btn-success mt-3">Book Now</button>
-            </form>
+            </div>
         </div>
 
-        <!-- Derde kader: Reviews -->
-        <div class="reviews-box border p-3 mt-5">
-            <h2 class="reviews-title">Customer Reviews</h2>
-            {% if reviews %}
-                <ul class="list-group">
-                    {% for review, transaction in reviews %}
-                        <li class="list-group-item review-item">
-                            <p><strong>Rating:</strong> {{ review.rating }} / 5</p>
-                            <p>{{ review.comment }}</p>
-                            <p><small class="text-muted">Reviewed on {{ review.created_at.strftime('%Y-%m-%d %H:%M') }}</small></p>
-                            <p><small>Transaction ID: {{ transaction.transaction_id }}</small></p>
-                        </li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <p>No reviews available for this parking spot.</p>
-            {% endif %}
+        <!-- Input form -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <form method="POST" action="{{ url_for('main.book_now', parking_spot_id=parking_spot.id) }}">
+                    <input type="hidden" name="availability_id" value="{{ availability.id }}">
+                    <input type="hidden" id="pricePerHour" value="{{ availability.price }}">
+                    <input type="hidden" id="availabilityStart" value="{{ availability.starttime.strftime('%Y-%m-%dT%H:%M') }}">
+                    <input type="hidden" id="availabilityEnd" value="{{ availability.endtime.strftime('%Y-%m-%dT%H:%M') }}">
+
+                    <div class="form-group">
+                        <label for="start_time" class="fs-5">Start Time:</label>
+                        <input type="datetime-local" id="start_time" name="start_time" class="form-control form-control-lg" required onchange="calculateTotalPrice()">
+                    </div>
+                    <div class="form-group mt-3">
+                        <label for="end_time" class="fs-5">End Time:</label>
+                        <input type="datetime-local" id="end_time" name="end_time" class="form-control form-control-lg" required onchange="calculateTotalPrice()">
+                    </div>
+                    <div id="errorMessage" class="text-danger mt-3 fs-6"></div>
+                    <div id="totalPrice" class="mt-3 text-success fs-5"></div>
+                    <button type="submit" class="btn btn-success mt-4 w-100 py-3 fs-4">Book Now</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Reviews -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="reviews-box border p-4">
+                    <h2 class="reviews-title fs-4">Customer Reviews</h2>
+                    {% if reviews %}
+                        <ul class="list-group">
+                            {% for review, transaction in reviews %}
+                                <li class="list-group-item review-item fs-5">
+                                    <p><strong>Rating:</strong> {{ review.rating }} / 5</p>
+                                    <p>{{ review.comment }}</p>
+                                    <p><small class="text-muted">Reviewed on {{ review.created_at.strftime('%Y-%m-%d %H:%M') }}</small></p>
+                                    <p><small>Transaction ID: {{ transaction.transaction_id }}</small></p>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="fs-5">No reviews available for this parking spot.</p>
+                    {% endif %}
+                </div>
+            </div>
         </div>
     </div>
 </body>
