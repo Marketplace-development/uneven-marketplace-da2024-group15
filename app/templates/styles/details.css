@@ -1,0 +1,44 @@
+/* Titelstijl */
+.parking-title {
+    color: #58917A;
+    font-weight: bold;
+    text-align: center;
+}
+
+/* Kaderstijl */
+.parking-info-box,
+.booking-box,
+.reviews-box {
+    border: 2px solid #58917A;
+    border-radius: 8px;
+    background-color: #F9F9F9;
+}
+
+/* Back to Home knop */
+.back-home-btn {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: #58917A;
+    color: white;
+    border-radius: 4px;
+}
+
+/* Stijl voor het totaalprijs-element */
+#totalPrice {
+    font-weight: bold;
+    color: #28a745; /* Groen */
+}
+
+/* Stijl voor reviews */
+.reviews-title {
+    color: #58917A;
+}
+
+.review-item {
+    border-left: 4px solid #58917A;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    background-color: #FFF;
+}
