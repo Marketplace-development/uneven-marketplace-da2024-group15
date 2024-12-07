@@ -75,7 +75,7 @@
 
                             <!-- Active Booked Availabilities -->
                             <div class="col-md-6">
-                                <h5>Active Booked Availabilities:</h5>
+                                <h5>Booked Availabilities:</h5>
                                 {% if item.availabilities.booked|length > 0 %}
                                     <ul class="list-group">
                                         {% for availability in item.availabilities.booked %}
@@ -83,7 +83,6 @@
                                                 From: {{ availability.starttime.strftime('%Y-%m-%d %H:%M') }} <br>
                                                 To: {{ availability.endtime.strftime('%Y-%m-%d %H:%M') }} <br>
                                                 Price: €{{ availability.price }} <br>
-                                                Status: Booked
                                             </li>
                                         {% endfor %}
                                     </ul>

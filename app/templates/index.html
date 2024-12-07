@@ -107,7 +107,7 @@
     <!-- Active Parking Spots -->
     <div class="container">
         <div class="row mt-5">
-            <h2>Active Parking Spots {% if search_city %}in "{{ search_city }}"{% endif %}</h2>
+            <h2>Available Parking Spots {% if search_city %}in "{{ search_city }}"{% endif %}</h2>
             <div class="d-flex flex-wrap">
                 {% for parking_spot, availability in active_listings %}
                     <div class="card m-2" style="width: 18rem;">
