@@ -31,9 +31,6 @@
             <button type="submit" class="btn btn-primary" id="submit-button" disabled>Save Changes</button>
             <a href="{{ url_for('main.account') }}" class="btn btn-secondary">Cancel</a>
 
-            <form method="POST" action="{{ url_for('main.delete_parking_spot', parking_spot_id=parking_spot.id) }}">
-                <button type="submit" class="btn btn-danger mt-3">Delete Availability</button>
-            </form>
             
         </form>
     </div>
