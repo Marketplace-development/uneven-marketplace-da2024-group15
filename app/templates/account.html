@@ -45,6 +45,13 @@
                         <strong>{{ item.listing.name }}</strong> <br>
                         <strong>Address:</strong> {{ item.listing.street_address }}, {{ item.listing.city }}, {{ item.listing.postal_code }} <br>
                         <p>{{ item.listing.description }}</p>
+                        <p><strong>Average Rating:</strong> 
+                            {% if item.average_rating is none %}
+                                No reviews yet
+                            {% else %}
+                                {{ item.average_rating }} / 5
+                            {% endif %}
+                        </p>
 
                         <!-- Buttons for Make Available and View Reviews -->
                         <div class="mt-3">

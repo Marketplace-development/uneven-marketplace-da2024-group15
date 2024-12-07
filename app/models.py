@@ -37,6 +37,13 @@ class ParkingSpot(db.Model):
     
     host = db.relationship('Host', backref=db.backref('parking_spots', lazy=True))
 
+    def average_rating(self):
+        reviews = self.reviews
+        if not reviews:
+            return None  
+        total_rating = sum(review.rating for review in reviews)
+        return round(total_rating / len(reviews))
+    
 # Availability Model
 class Availability(db.Model):
     __tablename__ = 'availability'

@@ -52,6 +52,16 @@
         <div class="row">
             <div class="col-12">
                 <a href="{{ url_for('main.index') }}" class="btn btn-secondary back-home-btn w-100 mb-3 py-3 fs-5">Back to Home</a>
+                <h1>{{ parking_spot.name }}</h1>
+                <p><strong>Address:</strong> {{ parking_spot.street_address }}, {{ parking_spot.city }}</p>
+                <p><strong>Price per hour:</strong> €{{ availability.price }}</p>
+                <p><strong>Average Rating:</strong> 
+                    {% if average_rating is none %}
+                        No reviews yet
+                    {% else %}
+                        {{ average_rating }} / 5
+                    {% endif %}
+                </p>
             </div>
         </div>
 

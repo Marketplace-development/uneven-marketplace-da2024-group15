@@ -107,18 +107,25 @@
     <!-- Active Parking Spots -->
     <div class="container">
         <div class="row mt-5">
-            <h2>Available Parking Spots {% if search_city %}in "{{ search_city }}"{% endif %}</h2>
+            <h2>Active Parking Spots {% if search_city %}in "{{ search_city }}"{% endif %}</h2>
             <div class="d-flex flex-wrap">
-                {% for parking_spot, availability in active_listings %}
+                {% for listing in active_listings %}
                     <div class="card m-2" style="width: 18rem;">
                         <div class="card-body">
-                            <h5 class="card-title">{{ parking_spot.name }}</h5>
-                            <p><strong>Address:</strong> {{ parking_spot.street_address }}, {{ parking_spot.city }}, {{ parking_spot.postal_code }}</p>
-                            <p><strong>Price:</strong> €{{ availability.price }}</p>
-                            <p><strong>Available From:</strong> {{ availability.starttime.strftime('%Y-%m-%d %H:%M') }}</p>
-                            <p><strong>To:</strong> {{ availability.endtime.strftime('%Y-%m-%d %H:%M') }}</p>
-                            <p><small class="text-muted">{{ parking_spot.description }}</small></p>
-                            <a href="{{ url_for('main.view_details', parking_spot_id=parking_spot.id, availability_id=availability.id) }}" class="btn btn-primary">View Details</a>
+                            <h5 class="card-title">{{ listing.parking_spot.name }}</h5>
+                            <p><strong>Address:</strong> {{ listing.parking_spot.street_address }}, {{ listing.parking_spot.city }}, {{ listing.parking_spot.postal_code }}</p>
+                            <p><strong>Price:</strong> €{{ listing.availability.price }}</p>
+                            <p><strong>Available From:</strong> {{ listing.availability.starttime.strftime('%Y-%m-%d %H:%M') }}</p>
+                            <p><strong>To:</strong> {{ listing.availability.endtime.strftime('%Y-%m-%d %H:%M') }}</p>
+                            <p><strong>Rating:</strong> 
+                                {% if listing.average_rating is none %}
+                                    No reviews yet
+                                {% else %}
+                                    {{ listing.average_rating }} / 5
+                                {% endif %}
+                            </p>
+                            <p><small class="text-muted">{{ listing.parking_spot.description }}</small></p>
+                            <a href="{{ url_for('main.view_details', parking_spot_id=listing.parking_spot.id, availability_id=listing.availability.id) }}" class="btn btn-primary">View Details</a>
                         </div>
                     </div>
                 {% else %}

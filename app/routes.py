@@ -97,8 +97,15 @@ def index():
     if city_input:
         query = query.filter(db.func.lower(ParkingSpot.city) == city_input)
 
-    # Voer de query uit
-    active_listings = query.all()
+    # Verwerk de resultaten naar een bruikbaar formaat
+    active_listings = [
+        {
+            "parking_spot": parking_spot,
+            "availability": availability,
+            "average_rating": parking_spot.average_rating()
+        }
+        for parking_spot, availability in query.all()
+    ]
 
     # Render de indexpagina met de gefilterde resultaten
     return render_template(
@@ -107,7 +114,6 @@ def index():
         active_listings=active_listings,
         search_city=city_input or None
     )
-
 
 @main.route('/register', methods=['GET', 'POST'])
 def register():
@@ -286,7 +292,8 @@ def account():
         }
         filtered_listings.append({
             "listing": listing,
-            "availabilities": filtered_availabilities
+            "availabilities": filtered_availabilities,
+            "average_rating": listing.average_rating()
         })
 
     return render_template(
@@ -408,11 +415,14 @@ def view_details(parking_spot_id, availability_id):
         Review.parking_spot_id == parking_spot_id
     ).all()
 
+    average_rating = parking_spot.average_rating()
+
     return render_template(
         'details.html',
         parking_spot=parking_spot,
         availability=availability,
-        reviews=reviews
+        reviews=reviews,
+        average_rating=average_rating
     )
 
 
