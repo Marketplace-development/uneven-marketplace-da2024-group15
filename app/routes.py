@@ -12,7 +12,7 @@ SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 @main.route('/')
-def login():
+def login():    
     """
     Startpagina: toont de loginpagina.
     Als een gebruiker al ingelogd is, wordt deze doorgestuurd naar de dashboardpagina.
@@ -226,7 +226,7 @@ def add_listing():
 @main.route('/account')
 def account():
     """
-    Account page: Shows user information and owned listings without expired availabilities.
+    Account page: Shows user information and owned listings with active booked and non-booked availabilities.
     """
     if 'username' not in session:
         flash("You need to be logged in to view your account.", "danger")
@@ -239,19 +239,25 @@ def account():
         flash("User not found in the database.", "danger")
         return redirect(url_for('main.index'))
 
-    # Listings owned by the user
+    # Haal alle parkeerplaatsen op die de gebruiker bezit
     listings = ParkingSpot.query.filter_by(host_id=user.phonenumber).all()
 
     # Huidige tijd in UTC
     current_time = datetime.utcnow()
 
-    # Filter beschikbaarheden voor weergave zonder SQLAlchemy-objecten te overschrijven
+    # Filter beschikbaarheden per parkeerplaats
     filtered_listings = []
     for listing in listings:
-        filtered_availabilities = [
-            availability for availability in listing.availabilities
-            if (availability.endtime - timedelta(hours=1)) > current_time
-        ]
+        filtered_availabilities = {
+            "non_booked": [
+                availability for availability in listing.availabilities
+                if not availability.is_booked and (availability.endtime - timedelta(hours=1)) > current_time
+            ],
+            "booked": [
+                availability for availability in listing.availabilities
+                if availability.is_booked and (availability.endtime - timedelta(hours=1)) > current_time
+            ]
+        }
         filtered_listings.append({
             "listing": listing,
             "availabilities": filtered_availabilities
@@ -260,8 +266,10 @@ def account():
     return render_template(
         'account.html',
         user=user,
-        filtered_listings=filtered_listings  # Geoptimaliseerde data voor de template
+        filtered_listings=filtered_listings
     )
+
+
 
 @main.route('/make_available/<int:parking_spot_id>', methods=['GET', 'POST'])
 def make_available(parking_spot_id):

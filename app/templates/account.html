@@ -9,7 +9,6 @@
     <div class="container mt-5">
         <div class="d-flex justify-content-between align-items-center">
             <h1>My Account</h1>
-            <!-- Back button -->
             <a href="{{ url_for('main.index') }}" class="btn btn-secondary">Back to Home</a>
         </div>
 
@@ -42,48 +41,66 @@
         {% if filtered_listings %}
             <ul class="list-group">
                 {% for item in filtered_listings %}
-                    <li class="list-group-item">
+                    <li class="list-group-item mb-4">
                         <strong>{{ item.listing.name }}</strong> <br>
                         <strong>Address:</strong> {{ item.listing.street_address }}, {{ item.listing.city }}, {{ item.listing.postal_code }} <br>
                         <p>{{ item.listing.description }}</p>
-                        <p><strong>Status:</strong> 
-                            {% if item.availabilities|length > 0 %}
-                                Available
-                            {% else %}
-                                Not Available
-                            {% endif %}
-                        </p>
 
-                        <!-- Availabilities -->
-                        {% if item.availabilities|length > 0 %}
-                            <h5>Availability:</h5>
-                            <ul class="list-group">
-                                {% for availability in item.availabilities %}
-                                    <li class="list-group-item">
-                                        From: {{ availability.starttime.strftime('%Y-%m-%d %H:%M') }} <br>
-                                        To: {{ availability.endtime.strftime('%Y-%m-%d %H:%M') }} <br>
-                                        Price: €{{ availability.price }}
-                                        <a href="{{ url_for('main.edit_availability', availability_id=availability.id) }}" class="btn btn-warning btn-sm mt-2">Edit</a>
-                                    </li>
-                                {% endfor %}
-                            </ul>
-                        {% endif %}
+                        <!-- Buttons for Make Available and View Reviews -->
+                        <div class="mt-3">
+                            <a href="{{ url_for('main.make_available', parking_spot_id=item.listing.id) }}" class="btn btn-primary">Make Available</a>
+                            <a href="{{ url_for('main.view_reviews', parking_spot_id=item.listing.id) }}" class="btn btn-info">View Reviews</a>
+                        </div>
 
-                        <!-- Buttons -->
-                        <a href="{{ url_for('main.make_available', parking_spot_id=item.listing.id) }}" class="btn btn-primary mt-2">Make Available</a>
-                        <a href="{{ url_for('main.view_reviews', parking_spot_id=item.listing.id) }}" class="btn btn-info mt-2">View Reviews</a>
+                        <!-- Availabilities Section -->
+                        <div class="row mt-4">
+                            <!-- Non-Booked Availabilities -->
+                            <div class="col-md-6">
+                                <h5>Non-Booked Availabilities:</h5>
+                                {% if item.availabilities.non_booked|length > 0 %}
+                                    <ul class="list-group">
+                                        {% for availability in item.availabilities.non_booked %}
+                                            <li class="list-group-item">
+                                                From: {{ availability.starttime.strftime('%Y-%m-%d %H:%M') }} <br>
+                                                To: {{ availability.endtime.strftime('%Y-%m-%d %H:%M') }} <br>
+                                                Price: €{{ availability.price }}
+                                                <a href="{{ url_for('main.edit_availability', availability_id=availability.id) }}" class="btn btn-warning btn-sm mt-2">Edit</a>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                {% else %}
+                                    <p>No non-booked availabilities.</p>
+                                {% endif %}
+                            </div>
+
+                            <!-- Active Booked Availabilities -->
+                            <div class="col-md-6">
+                                <h5>Active Booked Availabilities:</h5>
+                                {% if item.availabilities.booked|length > 0 %}
+                                    <ul class="list-group">
+                                        {% for availability in item.availabilities.booked %}
+                                            <li class="list-group-item text-muted">
+                                                From: {{ availability.starttime.strftime('%Y-%m-%d %H:%M') }} <br>
+                                                To: {{ availability.endtime.strftime('%Y-%m-%d %H:%M') }} <br>
+                                                Price: €{{ availability.price }} <br>
+                                                Status: Booked
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                {% else %}
+                                    <p>No active booked availabilities.</p>
+                                {% endif %}
+                            </div>
+                        </div>
                     </li>
                 {% endfor %}
             </ul>
         {% else %}
             <p>You have no parkingspots at the moment.</p>
         {% endif %}
-
     </div>
 
     <!-- Include Bootstrap JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
 </body>
 </html>
-
-
