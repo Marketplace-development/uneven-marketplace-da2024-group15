@@ -2,31 +2,48 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
-    <title>Add Review for {{ parking_spot.name }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leave a Review</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="styles/add_review.css">
 </head>
 <body>
     <div class="container mt-5">
-        <h1>Leave a Review for {{ parking_spot.name }}</h1>
-        <p><strong>Address:</strong> {{ parking_spot.street_address }}, {{ parking_spot.city }}, {{ parking_spot.postal_code }}</p>
-        <p><strong>Description:</strong> {{ parking_spot.description }}</p>
+        <!-- Back button -->
+        <a href="{{ url_for('main.view_booked_spots') }}" class="btn btn-secondary mb-3 btn-back">Back</a>
 
-        <form method="POST" action="{{ url_for('main.submit_review', parking_spot_id=parking_spot.id) }}">
-            <div class="mb-3">
-                <label for="rating" class="form-label">Rating (1-5)</label>
-                <input type="number" class="form-control" id="rating" name="rating" min="1" max="5" required>
+        <div class="row">
+            <!-- Form section -->
+            <div class="col-lg-8">
+                <h1 class="text-success fw-bold">Leave a Review for {{ parking_spot.name }}</h1>
+
+                <!-- Review Form -->
+                <form method="POST" action="{{ url_for('main.submit_review', parking_spot_id=parking_spot.id) }}" class="border p-4 bg-white">
+                    <p><strong>Address:</strong> {{ parking_spot.street_address }}, {{ parking_spot.city }}, {{ parking_spot.postal_code }}</p>
+                    <p><strong>Description:</strong> {{ parking_spot.description }}</p>
+
+                    <div class="mb-3">
+                        <label for="rating" class="form-label fw-bold">Rating (1-5)</label>
+                        <input type="number" class="form-control" id="rating" name="rating" min="1" max="5" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="comment" class="form-label fw-bold">Comment</label>
+                        <textarea class="form-control" id="comment" name="comment" rows="4" placeholder="Share your experience..."></textarea>
+                    </div>
+                    <input type="hidden" name="transaction_id" value="{{ transaction.transaction_id }}">
+
+                    <!-- Submit and Cancel buttons -->
+                    <button type="submit" class="btn btn-success btn-lg w-100">Submit Review</button>
+                </form>
             </div>
-            <div class="mb-3">
-                <label for="comment" class="form-label">Comment</label>
-                <textarea class="form-control" id="comment" name="comment" rows="4"></textarea>
+
+            <!-- Image (optional) -->
+            <div class="col-lg-4 d-none d-lg-flex justify-content-center">
+                <img src="static/images/review_image.png" alt="Review Image" class="img-fluid rounded align-self-center">
             </div>
-            <input type="hidden" name="transaction_id" value="{{ transaction.transaction_id }}">
-            <button type="submit" class="btn btn-primary">Submit Review</button>
-            <a href="{{ url_for('main.view_booked_spots') }}" class="btn btn-secondary">Cancel</a>
-        </form>
+        </div>
     </div>
 
-    <!-- Include Bootstrap JavaScript -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
