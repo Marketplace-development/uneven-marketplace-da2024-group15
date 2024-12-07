@@ -53,10 +53,10 @@ def logout():
     flash("You have been logged out", "success")
     return redirect(url_for('main.login'))
 
-@main.route('/index')
+@main.route('/index', methods=['GET'])
 def index():
     """
-    Dashboardpagina die alleen niet-geboekte parkeerplaatsen toont.
+    Dashboardpagina die parkeerplaatsen toont. Kan gefilterd worden op starttime, endtime en stad.
     """
     if 'username' not in session:
         flash("You need to be logged in to access the dashboard.", "danger")
@@ -68,20 +68,46 @@ def index():
     # Huidige tijd in UTC
     current_time = datetime.utcnow()
 
-    # Query naar actieve listings waarbij endtime groter is dan (current_time + 1 uur)
-    active_listings = (
-        db.session.query(ParkingSpot, Availability)
-        .join(Availability)
-        .filter(
-            ParkingSpot.host_id != user.phonenumber,
-            Availability.is_booked == False,  # Alleen niet-geboekte availabilities
-            (Availability.endtime - timedelta(hours=1)) > current_time  # Endtime - 1 uur > huidige tijd
-        )
-        .all()
+    # Zoekparameters ophalen
+    starttime_input = request.args.get('starttime', '').strip()
+    endtime_input = request.args.get('endtime', '').strip()
+    city_input = request.args.get('city', '').strip().lower()
+
+    # Basisquery: Alleen niet-geboekte parkeerplaatsen
+    query = db.session.query(ParkingSpot, Availability).join(Availability).filter(
+        ParkingSpot.host_id != user.phonenumber,
+        Availability.is_booked == False,
+        (Availability.endtime - timedelta(hours=1)) > current_time  # Alleen actieve beschikbaarheden
     )
 
-    print(f"Active listings found: {len(active_listings)}")
-    return render_template('index.html', username=username, active_listings=active_listings, search_city=None)
+    # Filter op starttime en endtime (indien opgegeven)
+    if starttime_input and endtime_input:
+        try:
+            starttime = datetime.strptime(starttime_input, '%Y-%m-%dT%H:%M')
+            endtime = datetime.strptime(endtime_input, '%Y-%m-%dT%H:%M')
+            query = query.filter(
+                Availability.starttime <= starttime,  # Beschikbaarheid moet starten vóór de opgegeven starttime
+                Availability.endtime >= endtime      # Beschikbaarheid moet eindigen ná de opgegeven endtime
+            )
+        except ValueError:
+            flash("Invalid date format. Please use the correct format for start and end times.", "danger")
+            return redirect(url_for('main.index'))
+
+    # Filter op stad (indien opgegeven)
+    if city_input:
+        query = query.filter(db.func.lower(ParkingSpot.city) == city_input)
+
+    # Voer de query uit
+    active_listings = query.all()
+
+    # Render de indexpagina met de gefilterde resultaten
+    return render_template(
+        'index.html',
+        username=username,
+        active_listings=active_listings,
+        search_city=city_input or None
+    )
+
 
 @main.route('/register', methods=['GET', 'POST'])
 def register():
@@ -633,60 +659,6 @@ def view_reviews(parking_spot_id):
 
     return render_template('view_reviews.html', parking_spot=parking_spot, reviews=reviews)
 
-
-@main.route('/search_listings', methods=['GET'])
-def search_listings():
-    if 'username' not in session:
-        flash("You need to be logged in to search listings.", "danger")
-        return redirect(url_for('main.login'))
-
-    search_type = request.args.get('search_type', 'city')
-    search_query = request.args.get('search_query', '').strip().lower()
-
-    if not search_query:
-        flash("Please enter a valid search query.", "danger")
-        return redirect(url_for('main.index'))
-
-    current_time = datetime.utcnow()
-
-    if search_type == 'city':
-        # Zoek op stad
-        matching_listings = (
-            db.session.query(ParkingSpot, Availability)
-            .join(Availability)
-            .filter(
-                db.func.lower(ParkingSpot.city) == search_query,
-                Availability.is_booked == False,
-                (Availability.endtime - timedelta(hours=1)) > current_time
-            )
-            .all()
-        )
-    elif search_type == 'user':
-        # Zoek op user en alleen actieve/available listings
-        user = User.query.filter(db.func.lower(User.username) == search_query).first()
-        if not user:
-            flash(f"No user found with username '{search_query}'.", "warning")
-            return redirect(url_for('main.index'))
-
-        matching_listings = (
-            db.session.query(ParkingSpot, Availability)
-            .join(Availability)
-            .filter(
-                ParkingSpot.host_id == user.phonenumber,
-                Availability.is_booked == False,
-                (Availability.endtime - timedelta(hours=1)) > current_time
-            )
-            .all()
-        )
-    else:
-        matching_listings = []
-
-    return render_template(
-        'index.html',
-        username=session.get('username'),
-        active_listings=matching_listings,
-        search_city=search_query if search_type == 'city' else None
-    )
 
 @main.route('/about')
 def about():
