@@ -70,7 +70,7 @@
                                             <li class="list-group-item">
                                                 From: {{ availability.starttime.strftime('%Y-%m-%d %H:%M') }} <br>
                                                 To: {{ availability.endtime.strftime('%Y-%m-%d %H:%M') }} <br>
-                                                Price: €{{ availability.price }}
+                                                Price per hour: €{{ availability.price }}
                                                 <a href="{{ url_for('main.edit_availability', availability_id=availability.id) }}" class="btn btn-warning btn-sm mt-2">Edit</a>
                                                 <form method="POST" action="{{ url_for('main.delete_availability', availability_id=availability.id) }}" class="mt-2">
                                                     <button type="submit" class="btn btn-danger btn-sm">Delete availability</button>
@@ -92,7 +92,7 @@
                                             <li class="list-group-item text-muted">
                                                 From: {{ availability.starttime.strftime('%Y-%m-%d %H:%M') }} <br>
                                                 To: {{ availability.endtime.strftime('%Y-%m-%d %H:%M') }} <br>
-                                                Price: €{{ availability.price }} <br>
+                                                Price per hour: €{{ availability.price }} <br>
                                             </li>
                                         {% endfor %}
                                     </ul>

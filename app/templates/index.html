@@ -83,6 +83,11 @@
                 <input type="datetime-local" name="endtime" id="endtime" class="form-control" placeholder="End Time" onchange="roundToNearestHour(this)">
             </div>
             <input type="text" name="city" class="form-control" placeholder="City">
+            <select name="sort_order" class="form-control">
+                <option value="">Sort By</option>
+                <option value="low_to_high" {% if sort_order == 'low_to_high' %}selected{% endif %}>Price: Low to High</option>
+                <option value="high_to_low" {% if sort_order == 'high_to_low' %}selected{% endif %}>Price: High to Low</option>
+            </select>
             <button type="submit" class="btn">Search</button>
             <img src="{{ url_for('static', filename='images/filter-icon.png') }}" alt="Filter">
         </form>

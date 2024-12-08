@@ -56,7 +56,7 @@ def logout():
 @main.route('/index', methods=['GET'])
 def index():
     """
-    Dashboardpagina die parkeerplaatsen toont. Kan gefilterd worden op starttime, endtime en stad.
+    Dashboardpagina die parkeerplaatsen toont. Kan gefilterd en gesorteerd worden.
     """
     if 'username' not in session:
         flash("You need to be logged in to access the dashboard.", "danger")
@@ -72,6 +72,7 @@ def index():
     starttime_input = request.args.get('starttime', '').strip()
     endtime_input = request.args.get('endtime', '').strip()
     city_input = request.args.get('city', '').strip().lower()
+    sort_order = request.args.get('sort_order', '').strip()
 
     # Basisquery: Alleen niet-geboekte parkeerplaatsen
     query = db.session.query(ParkingSpot, Availability).join(Availability).filter(
@@ -86,8 +87,8 @@ def index():
             starttime = datetime.strptime(starttime_input, '%Y-%m-%dT%H:%M')
             endtime = datetime.strptime(endtime_input, '%Y-%m-%dT%H:%M')
             query = query.filter(
-                Availability.starttime <= starttime,  # Beschikbaarheid moet starten vóór de opgegeven starttime
-                Availability.endtime >= endtime      # Beschikbaarheid moet eindigen ná de opgegeven endtime
+                Availability.starttime <= starttime,
+                Availability.endtime >= endtime
             )
         except ValueError:
             flash("Invalid date format. Please use the correct format for start and end times.", "danger")
@@ -96,6 +97,12 @@ def index():
     # Filter op stad (indien opgegeven)
     if city_input:
         query = query.filter(db.func.lower(ParkingSpot.city) == city_input)
+
+    # Sorteer de resultaten op prijs
+    if sort_order == 'low_to_high':
+        query = query.order_by(Availability.price.asc())
+    elif sort_order == 'high_to_low':
+        query = query.order_by(Availability.price.desc())
 
     # Verwerk de resultaten naar een bruikbaar formaat
     active_listings = [
@@ -112,8 +119,10 @@ def index():
         'index.html',
         username=username,
         active_listings=active_listings,
-        search_city=city_input or None
+        search_city=city_input or None,
+        sort_order=sort_order or None
     )
+
 
 @main.route('/register', methods=['GET', 'POST'])
 def register():
@@ -511,7 +520,7 @@ def book_now(parking_spot_id):
         db.session.add(transaction)
         db.session.commit()
 
-        flash("Your parking spot has been successfully booked.", "success")
+        flash("The parking spot has been successfully booked.", "success")
     except Exception as e:
         db.session.rollback()
         flash(f"An error occurred while booking the parking spot: {e}", "danger")
