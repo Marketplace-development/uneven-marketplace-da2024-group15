@@ -73,7 +73,7 @@
                                                 Price: €{{ availability.price }}
                                                 <a href="{{ url_for('main.edit_availability', availability_id=availability.id) }}" class="btn btn-warning btn-sm mt-2">Edit</a>
                                                 <form method="POST" action="{{ url_for('main.delete_availability', availability_id=availability.id) }}" class="mt-2">
-                                                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                                    <button type="submit" class="btn btn-danger btn-sm">Delete availability</button>
                                                 </form>
                                             </li>
                                         {% endfor %}
