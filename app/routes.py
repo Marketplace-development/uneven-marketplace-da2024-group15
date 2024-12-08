@@ -556,7 +556,7 @@ def view_booked_spots():
         expired_bookings=expired_bookings
     )
 
-@main.route('/add_review/<int:parking_spot_id>', methods=['GET'])
+@main.route('/add_review/<int:parking_spot_id>', methods=['GET', 'POST'])
 def add_review(parking_spot_id):
     """
     Route to display the review form for a parking spot.
@@ -588,7 +588,17 @@ def add_review(parking_spot_id):
         flash("You cannot leave a review for a parking spot you haven't booked.", "danger")
         return redirect(url_for('main.view_booked_spots'))
 
-    return render_template('add_review.html', parking_spot=parking_spot, transaction=transaction)
+    # Pass transaction data including availability times to the template
+    start_time = transaction.availability.starttime
+    end_time = transaction.availability.endtime
+
+    return render_template(
+        'add_review.html',
+        parking_spot=parking_spot,
+        transaction=transaction,
+        start_time=start_time,
+        end_time=end_time
+    )
 
 @main.route('/submit_review/<int:parking_spot_id>', methods=['POST'])
 def submit_review(parking_spot_id):

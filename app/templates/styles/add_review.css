@@ -1,58 +1,14 @@
-body {
-    background-color: #f5f5f5;
-    font-family: 'Roboto', sans-serif;
-}
-
-h1 {
-    font-size: 44px;
-    text-transform: capitalize;
-    line-height: 48px;
-    color: #28a745;
-}
-
-form {
-    border: 1px solid #58917A;
+.transaction-details {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
     border-radius: 10px;
-    background-color: #ffffff;
+    padding: 15px;
 }
-
-label {
-    font-size: 18px;
-    font-weight: bold;
-    color: #000;
+.transaction-details h2 {
+    font-size: 24px;
+    color: #6c757d;
 }
-
-button {
-    border-radius: 50px;
-    font-size: 18px;
-    font-weight: 600;
-    text-transform: uppercase;
-}
-
-.btn-back {
-    background-color: #6c757d;
-    color: white;
-    border-radius: 50px;
-    font-weight: bold;
-    text-transform: uppercase;
-    padding: 10px 20px;
-    text-align: center;
-    border: none;
-}
-
-.btn-back:hover {
-    background-color: #5a6268;
-    color: white;
-}
-
-img {
-    border: 1px solid #58917A;
-    border-radius: 10px;
-    max-width: 100%;
-    height: auto;
-}
-
-.d-lg-flex {
-    flex-direction: column;
-    justify-content: center;
+.transaction-details p {
+    font-size: 16px;
+    color: #212529;
 }
