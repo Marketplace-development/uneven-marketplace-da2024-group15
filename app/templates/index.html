@@ -131,7 +131,6 @@
                 <option value="high_to_low" {% if sort_order == 'high_to_low' %}selected{% endif %}>Price: High to Low</option>
             </select>
             <button type="submit" class="btn">Search</button>
-            <img src="{{ url_for('static', filename='images/filter-icon.png') }}" alt="Filter">
         </form>
         <a href="{{ url_for('main.view_map') }}" class="btn btn-primary ms-3">View Map</a>
     </div>
