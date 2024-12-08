@@ -2,6 +2,10 @@ from flask import Blueprint, request, redirect, url_for, render_template, sessio
 from .models import db, User, Host, Customer, ParkingSpot, Transaction, Review, Availability
 from supabase import create_client
 from datetime import datetime, timedelta, timezone
+from sqlalchemy import func
+from statistics import mean, stdev
+from decimal import Decimal
+
 
 # Blueprint instellen
 main = Blueprint('main', __name__)
@@ -342,6 +346,12 @@ def make_available(parking_spot_id):
         if (availability.endtime - timedelta(hours=1)) > current_time
     ]
 
+    # ** Voeg prijssuggestie toe **
+    price_suggestion = None
+    if parking_spot.city:
+        user_average_rating = parking_spot.average_rating() or 3  # Default naar score 3/5 als geen reviews
+        price_suggestion = suggest_price_range(parking_spot.city, user_average_rating, current_spot_id=parking_spot_id)
+
     if request.method == 'POST':
         starttime = request.form.get('starttime')
         endtime = request.form.get('endtime')
@@ -394,8 +404,10 @@ def make_available(parking_spot_id):
     return render_template(
         'make_available.html',
         parking_spot=parking_spot,
-        availabilities=active_availabilities
+        availabilities=active_availabilities,
+        price_suggestion=price_suggestion
     )
+
 
 @main.route('/details/<int:parking_spot_id>/<int:availability_id>')
 def view_details(parking_spot_id, availability_id):
@@ -851,3 +863,42 @@ def view_map():
 
     return render_template('map.html', locations=locations)
 
+
+def suggest_price_range(city, user_average_rating, current_spot_id=None):
+    """
+    Genereert een prijssuggestie op basis van prijzen in dezelfde stad en de reviewscore,
+    enkel gebaseerd op actieve en niet-geboekte beschikbaarheden.
+    """
+    # Huidige tijd in UTC
+    current_time = datetime.utcnow()
+
+    # Haal prijzen op van alle actieve en niet-geboekte beschikbaarheden in dezelfde stad
+    query = db.session.query(Availability.price, ParkingSpot.city).join(ParkingSpot).filter(
+        func.lower(ParkingSpot.city) == city.lower(),
+        Availability.is_booked == False,
+        (Availability.endtime - timedelta(hours=1)) > current_time  # Alleen actieve beschikbaarheden
+    )
+    
+    # Sluit de huidige parkeerplaats uit (indien van toepassing)
+    if current_spot_id:
+        query = query.filter(ParkingSpot.id != current_spot_id)
+    
+    # Gebruik de eerste waarde van de tuples uit de query
+    prices = [price for price, _ in query.all()]
+
+    if not prices:
+        return None  # Geen prijzen beschikbaar in dezelfde stad
+
+    # Bereken het gemiddelde en standaardafwijking van de prijzen
+    avg_price = mean(prices)
+    price_stdev = stdev(prices) if len(prices) > 1 else 0
+
+    # Pas een factor toe op basis van de gemiddelde reviewscores
+    review_factor_decimal = Decimal(str(1 + ((user_average_rating - 3) / 10)))  # Maximaal ±20% effect
+    adjusted_avg_price = Decimal(str(avg_price)) * review_factor_decimal
+
+    # Bereken de suggestie range
+    min_suggestie = max(0, adjusted_avg_price - price_stdev)  # Geen negatieve prijzen
+    max_suggestie = adjusted_avg_price + price_stdev
+
+    return (round(min_suggestie, 2), round(max_suggestie, 2))

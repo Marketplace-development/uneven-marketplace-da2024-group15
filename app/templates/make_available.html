@@ -63,6 +63,11 @@
                     <div class="mb-3">
                         <label for="price" class="form-label fw-bold">Price (€ per hour)</label>
                         <input type="number" class="form-control" id="price" name="price" step="0.01" min="0" required placeholder="Enter price in € per hour (e.g. €4,50)">
+                        {% if price_suggestion %}
+                            <div class="form-text text-success">
+                                Suggested Range: €{{ price_suggestion[0] }} - €{{ price_suggestion[1] }}
+                            </div>
+                        {% endif %}
                     </div>
                     <button type="submit" class="btn btn-success btn-lg w-100" id="submit-button" disabled>Save Availability</button>
                     <a href="{{ url_for('main.account') }}" class="btn btn-cancel btn-lg w-100">Cancel</a>
