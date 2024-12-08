@@ -787,3 +787,48 @@ def delete_availability(availability_id):
         flash(f"An error occurred: {e}", "danger")
 
     return redirect(url_for('main.account'))
+
+
+from geopy.geocoders import Nominatim
+from datetime import datetime
+
+geolocator = Nominatim(user_agent="rent-my-spot")
+
+@main.route('/map')
+def view_map():
+    """
+    Render a map displaying all parking spots with at least one active availability.
+    """
+    current_time = datetime.utcnow()
+
+    # Zoek naar parkeerplaatsen met actieve beschikbaarheden
+    active_spots = (
+        db.session.query(ParkingSpot)
+        .join(Availability)
+        .filter(
+            Availability.is_booked == False,
+            Availability.endtime > current_time  # Alleen niet-verlopen beschikbaarheden
+        )
+        .distinct()
+        .all()
+    )
+
+    locations = []
+    for spot in active_spots:
+        try:
+            # Dynamisch coördinaten ophalen
+            location = geolocator.geocode(f"{spot.street_address}, {spot.city}, Belgium")
+            if location:
+                locations.append({
+                    "name": spot.name,
+                    "address": spot.street_address,
+                    "city": spot.city,
+                    "postal_code": spot.postal_code,
+                    "lat": location.latitude,
+                    "lon": location.longitude,
+                })
+        except Exception as e:
+            print(f"Error fetching location for {spot.street_address}: {e}")
+
+    return render_template('map.html', locations=locations)
+

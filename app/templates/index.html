@@ -86,6 +86,7 @@
             <button type="submit" class="btn">Search</button>
             <img src="{{ url_for('static', filename='images/filter-icon.png') }}" alt="Filter">
         </form>
+        <a href="{{ url_for('main.view_map') }}" class="btn btn-primary ms-3">View Map</a>
     </div>
 
     <!-- Flash Messages -->
@@ -124,6 +125,7 @@
                                     {{ listing.average_rating }} / 5
                                 {% endif %}
                             </p>
+
                             <p><small class="text-muted">{{ listing.parking_spot.description }}</small></p>
                             <a href="{{ url_for('main.view_details', parking_spot_id=listing.parking_spot.id, availability_id=listing.availability.id) }}" class="btn btn-primary">View Details</a>
                         </div>
