@@ -724,17 +724,23 @@ def edit_availability(availability_id):
         flash("User not found in the database.", "danger")
         return redirect(url_for('main.index'))
 
+    # Haal de beschikbaarheid en bijbehorende parkeerplaats op
     availability = Availability.query.get(availability_id)
-
     if not availability:
         flash("Availability not found.", "danger")
         return redirect(url_for('main.account'))
 
     parking_spot = ParkingSpot.query.get(availability.parkingspot_id)
-
     if not parking_spot or parking_spot.host_id != user.phonenumber:
         flash("You do not have permission to edit this availability.", "danger")
         return redirect(url_for('main.account'))
+
+    # Haal alle actieve beschikbaarheden op voor deze parkeerplaats
+    current_time = datetime.utcnow()
+    active_availabilities = [
+        avail for avail in parking_spot.availabilities
+        if (avail.endtime - timedelta(hours=1)) > current_time and not avail.is_booked
+    ]
 
     if request.method == 'POST':
         starttime = request.form.get('starttime')
@@ -742,7 +748,7 @@ def edit_availability(availability_id):
         price = request.form.get('price')
 
         try:
-            # Validate times
+            # Valideer tijden
             start_datetime = datetime.strptime(starttime, "%Y-%m-%dT%H:%M")
             end_datetime = datetime.strptime(endtime, "%Y-%m-%dT%H:%M")
             if end_datetime <= start_datetime:
@@ -752,10 +758,10 @@ def edit_availability(availability_id):
             flash("Invalid date format. Please use the correct format (YYYY-MM-DD HH:MM).", "danger")
             return redirect(url_for('main.edit_availability', availability_id=availability_id))
 
-        # Check for overlapping availability (excluding the current availability)
+        # Controleer op overlappende beschikbaarheden
         overlapping = db.session.query(Availability).filter(
             Availability.parkingspot_id == parking_spot.id,
-            Availability.id != availability_id,  # Exclude the current availability
+            Availability.id != availability_id,
             db.or_(
                 db.and_(Availability.starttime <= start_datetime, Availability.endtime > start_datetime),
                 db.and_(Availability.starttime < end_datetime, Availability.endtime >= end_datetime),
@@ -767,7 +773,7 @@ def edit_availability(availability_id):
             flash("This parking spot is already available during this time period.", "danger")
             return redirect(url_for('main.edit_availability', availability_id=availability_id))
 
-        # Update the availability
+        # Update de beschikbaarheid
         try:
             availability.starttime = start_datetime
             availability.endtime = end_datetime
@@ -781,8 +787,13 @@ def edit_availability(availability_id):
             flash(f"An error occurred: {e}", "danger")
             return redirect(url_for('main.edit_availability', availability_id=availability_id))
 
-    return render_template('edit_availability.html', availability=availability, parking_spot=parking_spot)
-
+    # Render de edit_availability template
+    return render_template(
+        'edit_availability.html',
+        availability=availability,
+        parking_spot=parking_spot,
+        availabilities=active_availabilities
+    )
 
 @main.route('/delete_availability/<int:availability_id>', methods=['POST'])
 def delete_availability(availability_id):
