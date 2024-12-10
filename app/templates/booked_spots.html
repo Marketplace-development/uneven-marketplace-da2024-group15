@@ -2,80 +2,144 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Booked Parking Spots</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <style>
+        body {
+            background-color: #f8f9fa; /* Lichte achtergrond */
+        }
+
+        /* Stijl voor de back-knop */
+        .btn-back {
+            background-color: #58917A;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+
+        .btn-back:hover {
+            background-color: #4a7d67;
+        }
+
+        /* Tussentitels */
+        h1, h2 {
+            color: #58917A;
+        }
+
+        /* List-groepen voor items */
+        .list-group-item {
+            background-color: #58917A;
+            color: white;
+            border: none;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .list-group-item strong {
+            color: white;
+        }
+
+        /* Knoppen voor reviews */
+        .btn-primary {
+            background-color: #ffffff;
+            color: #58917A;
+            border-color: #58917A;
+        }
+
+        .btn-primary:hover {
+            background-color: #4a7d67;
+            color: white;
+        }
+
+        /* Stijl voor "Review already submitted" */
+        .review-submitted {
+            color: white;
+            border: 2px solid white;
+            border-radius: 5px;
+            padding: 5px 10px;
+            display: inline-block;
+            font-size: 14px;
+        }
+    </style>
 </head>
 <body>
     <div class="container mt-5">
         <!-- Flash Messages -->
         {% with messages = get_flashed_messages(with_categories=true) %}
-          {% if messages %}
-            <div>
-              {% for category, message in messages %}
-                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                  {{ message }}
-                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-              {% endfor %}
+        {% if messages %}
+        <div>
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
-          {% endif %}
+            {% endfor %}
+        </div>
+        {% endif %}
         {% endwith %}
 
+        <!-- Titel en terugknop -->
+        <a href="{{ url_for('main.index') }}" class="btn btn-back mb-3">Back</a>
         <h1>Booked Parking Spots</h1>
-        <a href="{{ url_for('main.index') }}" class="btn btn-secondary mb-3">Back to Home</a>
+        <br>
+        
 
         <!-- Active Bookings -->
         <h2>Active Bookings</h2>
         {% if active_bookings %}
-            <ul class="list-group">
-                {% for booking, availability in active_bookings %}
-                    <li class="list-group-item">
-                        <strong>{{ booking.parking_spot.name }}</strong><br>
-                        <strong>Address:</strong> {{ booking.parking_spot.street_address }}, {{ booking.parking_spot.city }}, {{ booking.parking_spot.postal_code }}<br>
-                        <p>{{ booking.parking_spot.description }}</p>
-                        <p><strong>Booking Date:</strong> {{ booking.transaction_date.strftime('%Y-%m-%d %H:%M') }}</p>
-                        <p><strong>Start Time:</strong> {{ availability.starttime.strftime('%Y-%m-%d %H:%M') }}</p>
-                        <p><strong>End Time:</strong> {{ availability.endtime.strftime('%Y-%m-%d %H:%M') }}</p>
-                        
-                        <!-- Review logic -->
-                        {% set reviews_for_transaction = booking.parking_spot.reviews | selectattr('id_from_transaction', 'equalto', booking.transaction_id) | list %}
-                        {% if reviews_for_transaction|length == 0 %}
-                            <a href="{{ url_for('main.add_review', parking_spot_id=booking.parking_spot.id) }}" class="btn btn-primary mt-2">Leave a Review</a>
-                        {% else %}
-                            <p class="text-success mt-2">Review already submitted</p>
-                        {% endif %}
-                    </li>
-                {% endfor %}
-            </ul>
+        <ul class="list-group">
+            {% for booking, availability in active_bookings %}
+            <li class="list-group-item">
+                <strong>{{ booking.parking_spot.name }}</strong><br>
+                <strong>Address:</strong> {{ booking.parking_spot.street_address }}, {{ booking.parking_spot.city }}, {{ booking.parking_spot.postal_code }}<br>
+                <p>{{ booking.parking_spot.description }}</p>
+                <p><strong>Booking Date:</strong> {{ booking.transaction_date.strftime('%Y-%m-%d %H:%M') }}</p>
+                <p><strong>Start Time:</strong> {{ availability.starttime.strftime('%Y-%m-%d %H:%M') }}</p>
+                <p><strong>End Time:</strong> {{ availability.endtime.strftime('%Y-%m-%d %H:%M') }}</p>
+
+                <!-- Review logic -->
+                {% set reviews_for_transaction = booking.parking_spot.reviews | selectattr('id_from_transaction', 'equalto', booking.transaction_id) | list %}
+                {% if reviews_for_transaction|length == 0 %}
+                <a href="{{ url_for('main.add_review', parking_spot_id=booking.parking_spot.id) }}" class="btn btn-primary mt-2">Leave a Review</a>
+                {% else %}
+                <span class="review-submitted">Review already submitted</span>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
         {% else %}
-            <p>No active bookings at the moment.</p>
+        <p>No active bookings at the moment.</p>
         {% endif %}
 
         <!-- Expired Bookings -->
         <h2>Expired Bookings</h2>
         {% if expired_bookings %}
-            <ul class="list-group">
-                {% for booking, availability in expired_bookings %}
-                    <li class="list-group-item">
-                        <strong>{{ booking.parking_spot.name }}</strong><br>
-                        <strong>Address:</strong> {{ booking.parking_spot.street_address }}, {{ booking.parking_spot.city }}, {{ booking.parking_spot.postal_code }}<br>
-                        <p>{{ booking.parking_spot.description }}</p>
-                        <p><strong>Booking Date:</strong> {{ booking.transaction_date.strftime('%Y-%m-%d %H:%M') }}</p>
-                        <p><strong>Start Time:</strong> {{ availability.starttime.strftime('%Y-%m-%d %H:%M') }}</p>
-                        <p><strong>End Time:</strong> {{ availability.endtime.strftime('%Y-%m-%d %H:%M') }}</p>
-                        
-                        <!-- Review logic -->
-                        {% set reviews_for_transaction = booking.parking_spot.reviews | selectattr('id_from_transaction', 'equalto', booking.transaction_id) | list %}
-                        {% if reviews_for_transaction|length == 0 %}
-                            <a href="{{ url_for('main.add_review', parking_spot_id=booking.parking_spot.id) }}" class="btn btn-primary mt-2">Leave a Review</a>
-                        {% else %}
-                            <p class="text-success mt-2">Review already submitted</p>
-                        {% endif %}
-                    </li>
-                {% endfor %}
-            </ul>
+        <ul class="list-group">
+            {% for booking, availability in expired_bookings %}
+            <li class="list-group-item">
+                <strong>{{ booking.parking_spot.name }}</strong><br>
+                <strong>Address:</strong> {{ booking.parking_spot.street_address }}, {{ booking.parking_spot.city }}, {{ booking.parking_spot.postal_code }}<br>
+                <p>{{ booking.parking_spot.description }}</p>
+                <p><strong>Booking Date:</strong> {{ booking.transaction_date.strftime('%Y-%m-%d %H:%M') }}</p>
+                <p><strong>Start Time:</strong> {{ availability.starttime.strftime('%Y-%m-%d %H:%M') }}</p>
+                <p><strong>End Time:</strong> {{ availability.endtime.strftime('%Y-%m-%d %H:%M') }}</p>
+
+                <!-- Review logic -->
+                {% set reviews_for_transaction = booking.parking_spot.reviews | selectattr('id_from_transaction', 'equalto', booking.transaction_id) | list %}
+                {% if reviews_for_transaction|length == 0 %}
+                <a href="{{ url_for('main.add_review', parking_spot_id=booking.parking_spot.id) }}" class="btn btn-primary mt-2">Leave a Review</a>
+                {% else %}
+                <span class="review-submitted">Review already submitted</span>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
         {% else %}
-            <p>No expired bookings at the moment.</p>
+        <p>No expired bookings at the moment.</p>
         {% endif %}
     </div>
 
