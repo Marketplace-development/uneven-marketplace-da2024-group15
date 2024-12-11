@@ -2,17 +2,69 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reviews for {{ parking_spot.name }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <style>
+        body {
+            background-color: #f8f9fa; /* Lichte achtergrond */
+        }
+
+        /* Stijl voor de back-knop */
+        .btn-back {
+            background-color: #58917A;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+
+        .btn-back:hover {
+            background-color: #4a7d67;
+        }
+
+        /* Titel */
+        h1 {
+            color: #58917A;
+        }
+
+        /* Stijl voor de reviews */
+        .list-group-item {
+            background-color: #58917A;
+            color: white;
+            border: none;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .list-group-item strong {
+            color: white;
+        }
+
+        .text-muted {
+            color: #e0e0e0 !important; /* Lichtere tekstkleur voor metadata */
+        }
+    </style>
 </head>
 <body>
     <div class="container mt-5">
+
+        <!-- Terugknop -->
+        <a href="{{ url_for('main.account') }}" class="btn btn-back mt-3">Back to My Account</a>
+        <br><br>
+
+        <!-- Titel -->
         <h1>Reviews for {{ parking_spot.name }}</h1>
+
+        <!-- Adres en beschrijving -->
         <p><strong>Address:</strong> {{ parking_spot.street_address }}, {{ parking_spot.city }}, {{ parking_spot.postal_code }}</p>
         <p><strong>Description:</strong> {{ parking_spot.description }}</p>
 
-        <a href="{{ url_for('main.account') }}" class="btn btn-secondary mt-3">Back to My Account</a>
+        
 
+        <!-- Reviews -->
         <div class="mt-4">
             {% if reviews %}
                 <ul class="list-group">
