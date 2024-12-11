@@ -46,15 +46,24 @@
         .text-muted {
             color: #e0e0e0 !important; /* Lichtere tekstkleur voor metadata */
         }
+
+        /* Stijl voor sterren */
+        .stars {
+            font-size: 20px;
+            color: white;
+        }
+
+        .stars .filled {
+            color: white;
+        }
+
+        .stars .empty {
+            color: rgba(255, 255, 255, 0.4); /* Transparant voor lege sterren */
+        }
     </style>
 </head>
 <body>
     <div class="container mt-5">
-
-        <!-- Terugknop -->
-        <a href="{{ url_for('main.account') }}" class="btn btn-back mt-3">Back to My Account</a>
-        <br><br>
-
         <!-- Titel -->
         <h1>Reviews for {{ parking_spot.name }}</h1>
 
@@ -62,7 +71,8 @@
         <p><strong>Address:</strong> {{ parking_spot.street_address }}, {{ parking_spot.city }}, {{ parking_spot.postal_code }}</p>
         <p><strong>Description:</strong> {{ parking_spot.description }}</p>
 
-        
+        <!-- Terugknop -->
+        <a href="{{ url_for('main.account') }}" class="btn btn-back mt-3">Back to My Account</a>
 
         <!-- Reviews -->
         <div class="mt-4">
@@ -70,7 +80,16 @@
                 <ul class="list-group">
                     {% for review, transaction in reviews %}
                         <li class="list-group-item">
-                            <p><strong>Rating:</strong> {{ review.rating }} / 5</p>
+                            <!-- Dynamische sterren -->
+                            <div class="stars">
+                                {% for i in range(1, 6) %}
+                                    {% if i <= review.rating %}
+                                        <span class="filled">&#9733;</span> <!-- Gevulde ster -->
+                                    {% else %}
+                                        <span class="empty">&#9734;</span> <!-- Lege ster -->
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
                             <p>{{ review.comment }}</p>
                             <p class="text-muted">
                                 <small>Submitted on: {{ review.created_at.strftime('%Y-%m-%d %H:%M') }}</small><br>
