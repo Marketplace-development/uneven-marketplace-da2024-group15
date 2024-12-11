@@ -32,7 +32,6 @@
                     <p>No availability has been set yet for this parking spot.</p>
                 {% endif %}
             </div>
-            
 
             <!-- Edit Availability Form Column -->
             <div class="col-lg-6">
@@ -40,18 +39,19 @@
                     <div class="mb-3">
                         <label for="starttime" class="form-label fw-bold">Start Time (YYYY-MM-DD HH)</label>
                         <input type="datetime-local" class="form-control" id="starttime" name="starttime" required step="3600"
-                               value="{{ availability.starttime.strftime('%Y-%m-%dT%H:%M') }}" onchange="formatTime(this); validateTimes()">
+                               value="{{ availability.starttime.strftime('%Y-%m-%dT%H:%M') }}" onchange="validateForm()">
                     </div>
                     <div class="mb-3">
                         <label for="endtime" class="form-label fw-bold">End Time (YYYY-MM-DD HH)</label>
                         <input type="datetime-local" class="form-control" id="endtime" name="endtime" required step="3600"
-                               value="{{ availability.endtime.strftime('%Y-%m-%dT%H:%M') }}" onchange="formatTime(this); validateTimes()">
-                        <div class="form-text text-danger d-none" id="time-error">End time cannot be earlier than start time.</div>
+                               value="{{ availability.endtime.strftime('%Y-%m-%dT%H:%M') }}" onchange="validateForm()">
+                        <div class="form-text text-danger d-none" id="time-error">End time must be later than start time.</div>
                     </div>
                     <div class="mb-3">
                         <label for="price" class="form-label fw-bold">Price (€)</label>
                         <input type="number" class="form-control" id="price" name="price" step="0.01" min="0" required
-                               value="{{ availability.price }}">
+                               value="{{ availability.price }}" onchange="validateForm()">
+                        <div class="form-text text-danger d-none" id="price-error">Price must be a positive number.</div>
                     </div>
                     <button type="submit" class="btn btn-success btn-lg w-100" id="submit-button" disabled>Save Changes</button>
                     <a href="{{ url_for('main.account') }}" class="btn btn-cancel btn-lg w-100 mt-3" style="border: 2px solid #58917A; color: #58917A; background-color: transparent; text-align: center;">Cancel</a>
@@ -61,31 +61,30 @@
     </div>
 
     <script>
-        function formatTime(input) {
-            if (input.value) {
-                const date = new Date(input.value);
-                date.setMinutes(0, 0, 0);
-                const year = date.getFullYear();
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const day = String(date.getDate()).padStart(2, '0');
-                const hours = String(date.getHours()).padStart(2, '0');
-                input.value = `${year}-${month}-${day}T${hours}:00`;
-            }
-        }
-
-        function validateTimes() {
+        function validateForm() {
             const startTime = document.getElementById('starttime').value;
             const endTime = document.getElementById('endtime').value;
-            const errorDiv = document.getElementById('time-error');
+            const price = document.getElementById('price').value;
+            const timeErrorDiv = document.getElementById('time-error');
+            const priceErrorDiv = document.getElementById('price-error');
             const submitButton = document.getElementById('submit-button');
 
             let isValid = true;
 
+            // Time validation
             if (endTime && startTime && new Date(endTime) <= new Date(startTime)) {
-                errorDiv.classList.remove('d-none');
+                timeErrorDiv.classList.remove('d-none');
                 isValid = false;
             } else {
-                errorDiv.classList.add('d-none');
+                timeErrorDiv.classList.add('d-none');
+            }
+
+            // Price validation
+            if (!price || isNaN(price) || price <= 0) {
+                priceErrorDiv.classList.remove('d-none');
+                isValid = false;
+            } else {
+                priceErrorDiv.classList.add('d-none');
             }
 
             submitButton.disabled = !isValid;
