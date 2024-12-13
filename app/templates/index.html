@@ -160,12 +160,43 @@
         <a href="{{ url_for('main.index') }}">Home</a>
         <a href="{{ url_for('main.account') }}">My Account</a>
         <a href="{{ url_for('main.add_listing') }}">Create Parking Spot</a>
-        <a href="{{ url_for('main.view_booked_spots') }}">View Booked Parking Spots</a>
+        <a href="{{ url_for('main.view_booked_spots') }}">Booked By Me</a>
         <a href="{{ url_for('main.about') }}">About Us</a>
         <form action="{{ url_for('main.logout') }}" method="post">
             <button type="submit" class="btn btn-link p-0">Logout</button>
         </form>
+        <button id="helpMeButton" class="btn btn-info btn-sm">Help me!</button>
     </div>
+    <!-- Help Me Modal -->
+    <div id="helpMeModal" class="modal" tabindex="-1" style="display: none;">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Welcome to Rent My Spot!</h5>
+                    <button type="button" class="btn-close" id="closeHelpModal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Finding or listing parking has never been easier. Follow these simple steps:</p>
+                    <ul>
+                        <li>
+                            <strong>Rent Parking Spots:</strong> Explore available parking spots on the homepage or use the search bar to filter by location and rental period. Click "View Details" to book a spot or check the map for all options.
+                        </li>
+                        <li>
+                            <strong>Post Your Spot:</strong> Click "Create a Parking Spot" to add your parking space. Activate your listing in the "My Account" section by setting availability times.
+                        </li>
+                        <li>
+                            <strong>Track Reservations:</strong> View all your booked spaces under "Booked By Me."
+                        </li>
+                        <li>
+                            <strong>Leave a review:</strong> Go to "Booked By Me" and leave a review for my expired bookings.
+                        </li>
+                    </ul>
+                    <p>If you have questions or need help, don’t hesitate to contact us. Thank you for choosing Rent My Spot!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     <!-- Flash Messages -->
     <div class="container mt-3">
@@ -301,6 +332,24 @@
         </div>
     </div>
     
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script>
+        // "Help me!" Button Functionality
+        document.getElementById("helpMeButton").addEventListener("click", function() {
+            document.getElementById("helpMeModal").style.display = "flex";
+        });
+
+        document.getElementById("closeHelpModal").addEventListener("click", function() {
+            document.getElementById("helpMeModal").style.display = "none";
+        });
+
+        window.addEventListener("click", function(event) {
+            if (event.target === document.getElementById("helpMeModal")) {
+                document.getElementById("helpMeModal").style.display = "none";
+            }
+        });
+    </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
 </body>
