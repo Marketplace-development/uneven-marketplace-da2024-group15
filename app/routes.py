@@ -910,3 +910,32 @@ def suggest_price_range(city, user_average_rating, current_spot_id=None):
     max_suggestie = adjusted_avg_price + price_stdev
 
     return (round(min_suggestie, 2), round(max_suggestie, 2))
+
+@main.route('/update_user', methods=['POST'])
+def update_user():
+    if 'username' not in session:
+        return {"status": "error", "message": "Unauthorized"}, 403
+
+    user = User.query.filter_by(username=session['username']).first()
+
+    data = request.json
+    field = data.get('field')
+    value = data.get('value')
+
+    if field == "username":
+        if User.query.filter_by(username=value).first():
+            return {"status": "error", "message": "Username already exists"}, 400
+        user.username = value
+        session['username'] = value
+
+    elif field == "email":
+        if User.query.filter_by(email=value).first():
+            return {"status": "error", "message": "Email already exists"}, 400
+        user.email = value
+
+
+    else:
+        return {"status": "error", "message": "Invalid field"}, 400
+
+    db.session.commit()
+    return {"status": "success", "message": f"{field} updated successfully!"}
