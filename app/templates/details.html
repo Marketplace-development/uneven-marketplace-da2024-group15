@@ -114,14 +114,14 @@
                         <label for="start_time" class="fs-5">Start Time:</label>
                         <input type="datetime-local" id="start_time" name="start_time" class="form-control form-control-lg" required onchange="formatTime(this); calculateTotalPrice()">
                         <p class="text-success mt-2 fs-6">
-                            Note: Prices are calculated per full hour. Partial hours are rounded up or down to the closest full hour.
+                            Note: Prices are calculated per full hour. Partial hours are rounded down to the closest full hour.
                         </p>
                     </div>
                     <div class="form-group mt-3">
                         <label for="end_time" class="fs-5">End Time:</label>
                         <input type="datetime-local" id="end_time" name="end_time" class="form-control form-control-lg" required onchange="formatTime(this); calculateTotalPrice()">
                         <p class="text-success mt-2 fs-6">
-                            Note: Prices are calculated per full hour. Partial hours are rounded up or down to the closest full hour.
+                            Note: Prices are calculated per full hour. Partial hours are rounded down to the closest full hour.
                         </p>
                     </div>
                     
