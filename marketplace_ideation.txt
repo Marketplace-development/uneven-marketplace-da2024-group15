@@ -1,24 +1,24 @@
 ### Marketplace Ideation
 
-Platform name: 
+Platform name: Rent my spot
 
-Short description: 
+Short description: Rent My Spot is a user-friendly platform that allows users to offer, search, and book parking spaces based on availability and location. It focuses on improving efficiency and convenience in parking space sharing, ideal for urban areas where parking spaces are scarce.
 
 # Taxonomy: Business Model
 
-User Type: Person | Organization
-Listing Kind: Good Transfer |Service
-Listing Type: Physical Good | Digital Good | Offline Serviced | Online Serviced
-Frequency: One-Time | Recurring
-Quantity: One | Many
-Price Discovery: Set by Provider | Set by Customer | Set by Market
-Price Calculation: By Quantity | By Feature | Auction | Quote
-Conversation System: Listing Conversation | Transaction Conversation
-Review by: By Customer | By Provider
-Review of: Of Listing | Of Provider
-Trust and Safety: ID Verification | Badges | In-app reporting
-Revenue Stream: Subscription | Commission | Fixed Fee | Listing Fee
-Revenue Source: Customer | Provider
+User Type: Person 
+Listing Kind: Service
+Listing Type: Offline Serviced 
+Frequency: Recurring
+Quantity: One
+Price Discovery: Set by Provider
+Price Calculation: By Feature
+Conversation System: /
+Review by: By Customer 
+Review of: Of Listing 
+Trust and Safety: /
+Revenue Stream: Commission 
+Revenue Source: Customer
 
 # Ontology model
 
@@ -27,22 +27,37 @@ Revenue Source: Customer | Provider
 3. Develop a platform-specific ontology: https://model-a-platform.com/applying-the-ontology/
 
 # User stories
-
-As a [], I want to [], so that []. Prio
-As a [Customer], I want to [buy a product], so that [I can use it]. 2
-As a [provider], I want to [sell a product], so that [I earn money]. 1
+As a [User], I want to [log in with my username], so that [I can access the homepage and start my session]. Prio: High
+As a [User], I want to [log out], so that [I can end my session]. Prio: High
+As a [New User], I want to [register with a username, phone number, and email], so that [I can access the application]. Prio: High
+As a [User], I want to [view a dashboard of available parking spots], so that [I can make a quick choice]. Prio: High
+As a [User], I want to [filter parking spots by city, availability, and price], so that [I can find the best option within my budget]. Prio: Medium
+As a [User], I want to [sort parking spots by price], so that [I can stay within my budget]. Prio: Medium
+As a [Host], I want to [add a new parking spot with details and location], so that [I can make it available for rent]. Prio: High
+As a [Host], I want to [add availability for my parking spot], so that [I can rent it out during those times]. Prio: High
+As a [Host], I want to [edit existing availability times and prices], so that [I can adjust to current demand or fix mistakes]. Prio: Medium
+As a [Host], I want to [delete outdated availability], so that [my listings stay clean]. Prio: Medium
+As a [Customer], I want to [book a parking spot for a specific time range], so that [I can secure it in advance]. Prio: High
+As a [Customer], I want to [view my booked parking spots], so that [I can manage my reservations]. Prio: Medium
+As a [Customer], I want to [leave a review for a parking spot], so that [I can help others and provide feedback]. Prio: Medium
+As a [Host], I want to [go to my account], so that [I can see which time slots have and haven't been booked]. Prio: Medium
+As a [User], I want to [view reviews for a parking spot], so that [I can make an informed decision]. Prio: Medium
+As a [User], I want to [view a map of available parking spots], so that [I can easily locate spots in my area]. Prio: Low
+As a [Host], I want to [get price suggestions for my parking spots], so that [I can set competitive pricing]. Prio: Low
+As a [User], I want to [be able to get help about basic funtionalities], so that [I know how to use the platform]. Prio: Low
+As a [User], I want to [edit my account], so that [I can update my account details]. Prio: Low
+As a [User], I want to [learn more about the platform on the About Us page], so that [I can understand its purpose, mission, and values]. Prio: Low
 
 # UI Prototype
 
-https://www.figma.com/
+We started by making Figma pages to base our app and its functionalities on this concept.
+https://www.figma.com/design/hlOWH2qBeIBffYBJxIO1d8/Rent-My-Spot?node-id=68-130&node-type=canvas&t=ZjG8AtbztmVRplDO-0
 
 # Database Design
 
-https://supabase.com/
+https://supabase.com/dashboard/project/dtdwcwplnobtjbstnqxd/editor
 
-# Software Development
 
-https://www.geeksforgeeks.org/flask-tutorial/
 
 
 
