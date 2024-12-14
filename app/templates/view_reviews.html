@@ -64,6 +64,23 @@
 </head>
 <body>
     <div class="container mt-5">
+        <!-- Dropdown menu -->
+        <div class="dropdown text-end mb-3">
+            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                MENU
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <li><a class="dropdown-item" href="{{ url_for('main.index') }}">Home</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('main.account') }}">My Account</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('main.add_listing') }}">Create Parking Spot</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('main.view_booked_spots') }}">View Booked Parking Spots</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('main.about') }}">About Us</a></li>
+                <li><form action="{{ url_for('main.logout') }}" method="post">
+                    <button type="submit" class="dropdown-item">Logout</button>
+                </form></li>
+            </ul>
+        </div>
+    <div class="container mt-5">
         <!-- Titel -->
         <h1>Reviews for {{ parking_spot.name }}</h1>
 

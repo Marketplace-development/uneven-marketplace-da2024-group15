@@ -110,6 +110,23 @@
 </head>
 <body>
     <div class="container mt-5">
+        <!-- Dropdown menu -->
+        <div class="dropdown text-end mb-3">
+            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                MENU
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <li><a class="dropdown-item" href="{{ url_for('main.index') }}">Home</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('main.account') }}">My Account</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('main.add_listing') }}">Create Parking Spot</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('main.view_booked_spots') }}">View Booked Parking Spots</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('main.about') }}">About Us</a></li>
+                <li><form action="{{ url_for('main.logout') }}" method="post">
+                    <button type="submit" class="dropdown-item">Logout</button>
+                </form></li>
+            </ul>
+        </div>
+    <div class="container mt-5">
         <div class="mb-3">
             <a href="{{ url_for('main.index') }}" class="btn btn-back">Back to Home</a>
         </div>
@@ -237,7 +254,7 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
-                            <label for="newUsername" class="form-label" style="color:#58917A">New Username:</label>
+                            <label for="newUsername" class="form-label">New Username:</label>
                             <input type="text" id="newUsername" name="username" class="form-control" required>
                         </div>
                         <div class="modal-footer">
@@ -258,7 +275,7 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
-                            <label for="newEmail" class="form-label" style="color:#58917A">New Email:</label>
+                            <label for="newEmail" class="form-label">New Email:</label>
                             <input type="email" id="newEmail" name="email" class="form-control" required>
                         </div>
                         <div class="modal-footer">

@@ -9,35 +9,95 @@
     <link href='https://fonts.googleapis.com/css?family=Luckiest Guy' rel='stylesheet'>
     <style>
         h1 {
-        font-family: 'Luckiest Guy';font-size: 60px;
-        text-align: left;
-        color: #58917A;
+            font-family: 'Luckiest Guy';
+            font-size: 60px;
+            text-align: left;
+            color: #58917A;
+        }
+
+        .get-in-touch {
+            margin-top: 30px;
+            padding: 40px;
+            background-color: #9fcebf;
+            color: #09075a;
+            border-radius: 8px;
+        }
+
+        .get-in-touch h2 {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .get-in-touch h3 {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .get-in-touch p {
+            font-size: 16px;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        .get-in-touch img {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+
+        .get-in-touch a {
+            color: #0f3e23;
+            text-decoration: none;
+        }
+
+        .get-in-touch a:hover {
+            text-decoration: underline;
         }
     </style>
-    
 </head>
 <body>
     <div class="container mt-5">
-        <h1>About Us</h1>
-        <p>
-            We are Axl, Elisabeth, Lara, Lieke, Tibe, and Wannes—a team of six passionate Business Engineering students from Ghent University.
-            Currently in our third year of studies, we have worked together to create an innovative web application for renting and leasing parking spaces.
-        </p>
-        <p>
-            The idea for this project came from a challenge we often face ourselves: the struggle to find a parking spot.
-            Whether planning a trip to the seaside or enjoying a day of shopping in the city, the search for convenient parking can be frustrating and time-consuming.
-        </p>
-        <p>
-            With this in mind, we developed a solution to make parking easier and more accessible for everyone. Our application is designed to improve mobility and simplify everyday life.
-        </p>
-        <p>
-            By combining our skills, creativity, and dedication, we have turned our vision into reality, and we are proud to share it with you!
-        </p>
-        <a href="{{ url_for('main.index') }}" class="btn btn-secondary mb-3 btn-home">Back to Home</a>
+        <!-- Dropdown menu -->
+        <div class="dropdown text-end mb-3">
+            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                MENU
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <li><a class="dropdown-item" href="{{ url_for('main.index') }}">Home</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('main.account') }}">My Account</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('main.add_listing') }}">Create Parking Spot</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('main.view_booked_spots') }}">View Booked Parking Spots</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('main.about') }}">About Us</a></li>
+                <li>
+                    <form action="{{ url_for('main.logout') }}" method="post">
+                        <button type="submit" class="dropdown-item">Logout</button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+
+        <div class="container mt-5">
+            <h1>About Us</h1>
+            <p>
+                We are Axl, Elisabeth, Lara, Lieke, Tibe, and Wannes—a team of six passionate Business Engineering students from Ghent University.
+                Currently in our third year of studies, we have worked together to create an innovative web application for renting and leasing parking spaces.
+            </p>
+            <p>
+                The idea for this project came from a challenge we often face ourselves: the struggle to find a parking spot.
+                Whether planning a trip to the seaside or enjoying a day of shopping in the city, the search for convenient parking can be frustrating and time-consuming.
+            </p>
+            <p>
+                With this in mind, we developed a solution to make parking easier and more accessible for everyone. Our application is designed to improve mobility and simplify everyday life.
+            </p>
+            <p>
+                By combining our skills, creativity, and dedication, we have turned our vision into reality, and we are proud to share it with you!
+            </p>
+            <a href="{{ url_for('main.index') }}" class="btn btn-secondary mb-3 btn-home">Back to Home</a>
+        </div>
     </div>
-</body>
-<div class="get-in-touch mt-5 p-4" style="background-color: #9fcebf; color: #09075a; border-radius: 8px;">
-    <div class="get-in-touch mt-5 p-4">
+
+    <div class="get-in-touch mt-5 p-4" style="background-color: #9fcebf; color: #09075a; border-radius: 8px;">
         <div class="row">
             <div class="col-md-6">
                 <h2>Get in Touch</h2>
@@ -59,12 +119,11 @@
                     <img src="{{ url_for('static', filename='images/instalogo.png') }}" alt="Instagram Icon" style="width: 20px; height: 20px; margin-right: 10px;">
                     <strong>Instagram:</strong> <a href="https://www.instagram.com/rentmyspot_be/" style="color: #0f3e23" target="_blank">@rentmyspot_be</a>
                 </p>
-                
             </div>
         </div>
     </div>
-    
+
+    <!-- Bootstrap JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+</body>
 </html>
-
-
-
