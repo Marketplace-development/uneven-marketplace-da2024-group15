@@ -135,6 +135,50 @@
             color:#58917A
         }
 
+        .d-flex {
+            display: flex; /* Zorgt voor horizontale uitlijning */
+            align-items: center; /* Verticaal uitlijnen van inhoud */
+        }
+    
+        .me-2 {
+            margin-right: 0.5rem; /* Creëert ruimte tussen 'Rating:' en de sterren */
+        }
+
+        .btn-logout {
+            background-color: #dc3545; /* Rood */
+            color: white; /* Witte tekst */
+            border: none; /* Geen rand */
+            border-radius: 5px; /* Maak de hoeken licht afgerond */
+            padding: 10px 20px; /* Voeg wat binnenruimte toe */
+            font-weight: bold; /* Maak de tekst dikker */
+            cursor: pointer; /* Zorg dat het eruitziet als een klikbare knop */
+        }
+    
+        .btn-logout:hover {
+            background-color: #a71d2a; /* Donkerder rood bij hover */
+            color: white; /* Witte tekst behouden */
+        }
+
+        .btn-help {
+            background-color: #f0ad4e; /* Oranje kleur */
+            color: white; /* Witte tekst */
+            border: none; /* Geen rand */
+            border-radius: 5px; /* Zelfde hoekafronding als de logout-knop */
+            padding: 10px 20px; /* Binnenruimte zoals bij de logout-knop */
+            font-weight: bold; /* Dikkere tekst */
+            cursor: pointer; /* Klik-indicator */
+        }
+    
+        .btn-help:hover {
+            background-color: #ec971f; /* Donkerder oranje bij hover */
+            color: white; /* Witte tekst behouden */
+        }
+    
+        .btn-help:focus {
+            outline: none; /* Verwijder standaard focusrand */
+            box-shadow: 0 0 10px rgba(240, 173, 78, 0.5); /* Subtiele oranje gloed bij focus */
+        }
+
         @media (max-width: 768px) {
             .top-bar {
                 flex-direction: column;
@@ -166,10 +210,10 @@
         <a href="{{ url_for('main.add_listing') }}">Create Parking Spot</a>
         <a href="{{ url_for('main.view_booked_spots') }}">Booked By Me</a>
         <a href="{{ url_for('main.about') }}">About Us</a>
+        <button id="helpMeButton" class="btn btn-help">Help me!</button>
         <form action="{{ url_for('main.logout') }}" method="post">
-            <button type="submit" class="btn btn-link p-0">Logout</button>
+            <button type="submit" class="btn btn-logout">Logout</button>
         </form>
-        <button id="helpMeButton" class="btn btn-info btn-sm">Help me!</button>
     </div>
     <!-- Help Me Modal -->
     <div id="helpMeModal" class="modal" tabindex="-1" style="display: none;">
@@ -319,13 +363,23 @@
                         <p class="card-text"><strong>From:</strong> {{ listing.availability.starttime.strftime('%Y-%m-%d %H:%M') }}</p>
                         <p class="card-text"><strong>To:</strong> {{ listing.availability.endtime.strftime('%Y-%m-%d %H:%M') }}</p>
                         <p class="card-text">
-                            <strong>Rating:</strong>
-                            {% if listing.average_rating is none %}
-                            No reviews yet
-                            {% else %}
-                            {{ listing.average_rating }} / 5
-                            {% endif %}
-                        </p>
+                            <div class="d-flex align-items-center">
+                                <strong class="me-2">Rating:</strong>
+                                {% if listing.average_rating is not none %}
+                                    <div class="stars">
+                                        {% for i in range(1, 6) %}
+                                            {% if i <= listing.average_rating %}
+                                                <span class="filled">&#9733;</span> <!-- Gevulde ster -->
+                                            {% else %}
+                                                <span class="empty">&#9734;</span> <!-- Lege ster -->
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <span>No reviews yet</span>
+                                {% endif %}
+                            </div>
+                            <br>
                         <a href="{{ url_for('main.view_details', parking_spot_id=listing.parking_spot.id, availability_id=listing.availability.id) }}" class="btn btn-primary">View Details</a>
                     </div>
                 </div>
