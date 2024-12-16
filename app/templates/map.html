@@ -11,11 +11,29 @@
             height: 80vh;
             width: 100%;
         }
+
+        .btn-back {
+            background-color: #58917A;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+    
+        .btn-back:hover {
+            background-color: #4a7d67;
+        }
+
+        h1{
+            color:#58917A
+        }
+    
     </style>
 </head>
 <body>
     <div class="container mt-3">
-        <a href="{{ url_for('main.index') }}" class="btn btn-light mb-2">Back to home</a>
+        <a href="{{ url_for('main.index') }}" class="btn btn-back">Back to Home</a>
         <h1>Parking Spots Map</h1>
         <div id="map"></div>
     </div>
