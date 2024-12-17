@@ -23,6 +23,21 @@
             background-color: #4a7d67;
         }
 
+        .btn-success {
+            background-color: #f0ad4e; /* Oranje kleur */
+            color: white; /* Witte tekst */
+            border: none; /* Geen rand */
+            border-radius: 5px; /* Zelfde hoekafronding als de logout-knop */
+            padding: 10px 20px; /* Binnenruimte zoals bij de logout-knop */
+            font-weight: bold; /* Dikkere tekst */
+            cursor: pointer; /* Klik-indicator */
+        }
+    
+        .btn-success:hover {
+            background-color: #ec971f; /* Donkerder oranje bij hover */
+            color: white; /* Witte tekst behouden */
+        }
+
         h1, h3 {
             color: #58917A;
         }
@@ -168,7 +183,10 @@
 
         <!-- My Parking Spots -->
         <div class="parking-spots-container">
-            <h3>My Parking Spots</h3>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="mb-0">My Parking Spots</h3>
+                <a href="{{ url_for('main.add_listing') }}" class="btn btn-success btn-lg">+ Create Parking Spot</a>
+            </div>
             {% if filtered_listings %}
                 {% for item in filtered_listings %}
                     <div class="parking-spot-card">
