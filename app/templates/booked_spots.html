@@ -122,14 +122,6 @@
                 <p><strong>Booking Date:</strong> {{ booking.transaction_date.strftime('%Y-%m-%d %H:%M') }}</p>
                 <p><strong>Start Time:</strong> {{ availability.starttime.strftime('%Y-%m-%d %H:%M') }}</p>
                 <p><strong>End Time:</strong> {{ availability.endtime.strftime('%Y-%m-%d %H:%M') }}</p>
-
-                <!-- Review logic -->
-                {% set reviews_for_transaction = booking.parking_spot.reviews | selectattr('id_from_transaction', 'equalto', booking.transaction_id) | list %}
-                {% if reviews_for_transaction|length == 0 %}
-                <a href="{{ url_for('main.add_review', parking_spot_id=booking.parking_spot.id) }}" class="btn btn-primary mt-2">Leave a Review</a>
-                {% else %}
-                <span class="review-submitted">Review already submitted</span>
-                {% endif %}
             </li>
             {% endfor %}
         </ul>
