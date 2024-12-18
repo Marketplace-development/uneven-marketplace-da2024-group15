@@ -565,7 +565,7 @@ def view_booked_spots():
     expired_bookings = []
 
     for booking, availability in booked_spots:
-        if availability.endtime >= current_time:  # Actieve boekingen
+        if (availability.endtime - timedelta(hours=1)) >= current_time:
             active_bookings.append((booking, availability))
         else:  # Verlopen boekingen
             expired_bookings.append((booking, availability))
